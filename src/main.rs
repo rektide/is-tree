@@ -16,14 +16,24 @@ struct Args {
     #[arg(long)]
     filter: Option<String>,
 
+    #[arg(long)]
+    sort: Option<String>,
+
     #[arg(name = "DIRECTORIES")]
     directories: Vec<PathBuf>,
+}
+
+#[derive(Debug, Clone)]
+struct Result {
+    status: String,
+    directory: PathBuf,
 }
 
 fn main() {
     let args = Args::parse();
 
     let filters = parse_filters(args.filter.as_deref());
+    let sort_specs = parse_sort_specs(args.sort.as_deref());
 
     let paths = if args.all {
         let current_dir = Path::new(".");
@@ -38,13 +48,24 @@ fn main() {
         args.directories
     };
 
+    let mut results: Vec<Result> = Vec::new();
+
     for path in paths {
         let info = detect_repo(&path);
         let status = get_status_string(&info);
 
         if matches_filters(&filters, &info, &status) {
-            println!("{} {}", status, path.display());
+            results.push(Result {
+                status: status.to_string(),
+                directory: path,
+            });
         }
+    }
+
+    sort_results(&mut results, &sort_specs);
+
+    for result in results {
+        println!("{} {}", result.status, result.directory.display());
     }
 }
 
@@ -52,6 +73,75 @@ fn main() {
 struct Filter {
     value: String,
     negate: bool,
+}
+
+#[derive(Debug, Clone)]
+struct SortSpec {
+    column: String,
+    descending: bool,
+}
+
+fn parse_sort_specs(sort_str: Option<&str>) -> Vec<SortSpec> {
+    let mut specs = Vec::new();
+
+    if let Some(s) = sort_str {
+        for part in s.split(',') {
+            let part = part.trim();
+            if part.is_empty() {
+                continue;
+            }
+
+            let descending = part.ends_with('-');
+            let ascending = part.ends_with('+');
+
+            let column = if descending || ascending {
+                part[..part.len() - 1].to_string()
+            } else {
+                part.to_string()
+            };
+
+            let descending = if descending {
+                true
+            } else if ascending {
+                false
+            } else {
+                false
+            };
+
+            specs.push(SortSpec { column, descending });
+        }
+    }
+
+    specs
+}
+
+fn sort_results(results: &mut Vec<Result>, sort_specs: &[SortSpec]) {
+    if sort_specs.is_empty() {
+        return;
+    }
+
+    results.sort_by(|a, b| {
+        for spec in sort_specs {
+            let ordering = match spec.column.as_str() {
+                "status" => a.status.cmp(&b.status),
+                "directory" => compare_paths(&a.directory, &b.directory),
+                _ => std::cmp::Ordering::Equal,
+            };
+
+            if ordering != std::cmp::Ordering::Equal {
+                return if spec.descending {
+                    ordering.reverse()
+                } else {
+                    ordering
+                };
+            }
+        }
+        std::cmp::Ordering::Equal
+    });
+}
+
+fn compare_paths(a: &Path, b: &Path) -> std::cmp::Ordering {
+    a.display().to_string().cmp(&b.display().to_string())
 }
 
 fn parse_filters(filter_str: Option<&str>) -> Vec<Filter> {
