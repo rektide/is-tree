@@ -1,24 +1,64 @@
-use std::env;
-use std::path::PathBuf;
+use std::fs;
+use std::path::{Path, PathBuf};
+
+use clap::Parser;
 
 mod detect;
 
 use detect::{detect_repo, RepoType};
 
+#[derive(Parser)]
+#[command(name = "is-tree")]
+struct Args {
+    #[arg(short, long)]
+    all: bool,
+
+    #[arg(name = "DIRECTORIES")]
+    directories: Vec<PathBuf>,
+}
+
 fn main() {
-    let args: Vec<String> = env::args().skip(1).collect();
+    let args = Args::parse();
 
-    if args.is_empty() {
-        eprintln!("Usage: is-tree <directory> [directories...]");
+    let paths = if args.all {
+        let current_dir = Path::new(".");
+        get_subdirectories(current_dir)
+            .into_iter()
+            .map(|p| current_dir.join(p))
+            .collect()
+    } else if args.directories.is_empty() {
+        eprintln!("Usage: is-tree <directory> [directories...] | --all");
         std::process::exit(1);
-    }
+    } else {
+        args.directories
+    };
 
-    for arg in args {
-        let path = PathBuf::from(&arg);
+    for path in paths {
         let info = detect_repo(&path);
         let status = get_status_string(&info);
         println!("{} {}", status, path.display());
     }
+}
+
+fn get_subdirectories(dir: &Path) -> Vec<String> {
+    let mut dirs = Vec::new();
+
+    if let Ok(entries) = fs::read_dir(dir) {
+        for entry in entries.flatten() {
+            if let Ok(file_type) = entry.file_type() {
+                if file_type.is_dir() {
+                    if let Some(name) = entry.file_name().to_str() {
+                        if !name.starts_with('.') {
+                            dirs.push(name.to_string());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    dirs.sort();
+    dirs
 }
 
 fn get_status_string(info: &detect::RepoInfo) -> &'static str {
