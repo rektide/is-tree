@@ -19,6 +19,9 @@ struct Args {
     #[arg(long)]
     sort: Option<String>,
 
+    #[arg(long)]
+    format: Option<String>,
+
     #[arg(name = "DIRECTORIES")]
     directories: Vec<PathBuf>,
 }
@@ -27,6 +30,9 @@ struct Args {
 struct Result {
     status: String,
     directory: PathBuf,
+    commit_date: Option<String>,
+    change_date: Option<String>,
+    workparent: Option<String>,
 }
 
 fn main() {
@@ -58,15 +64,35 @@ fn main() {
             results.push(Result {
                 status: status.to_string(),
                 directory: path,
+                commit_date: None,
+                change_date: None,
+                workparent: None,
             });
         }
     }
 
     sort_results(&mut results, &sort_specs);
 
-    for result in results {
-        println!("{} {}", result.status, result.directory.display());
+    if let Some(format_str) = args.format {
+        for result in results {
+            let formatted = format_result(&result, &format_str);
+            println!("{}", formatted);
+        }
+    } else {
+        for result in results {
+            println!("{} {}", result.status, result.directory.display());
+        }
     }
+}
+
+fn format_result(result: &Result, format_str: &str) -> String {
+    let mut output = format_str.to_string();
+    output = output.replace("{status}", &result.status);
+    output = output.replace("{directory}", &result.directory.display().to_string());
+    output = output.replace("{commit-date}", result.commit_date.as_deref().unwrap_or(""));
+    output = output.replace("{change-date}", result.change_date.as_deref().unwrap_or(""));
+    output = output.replace("{workparent}", result.workparent.as_deref().unwrap_or(""));
+    output
 }
 
 #[derive(Debug, Clone)]
