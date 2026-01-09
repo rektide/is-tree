@@ -13,6 +13,19 @@ pub struct RepoInfo {
     pub is_worktree: bool,
 }
 
+pub fn get_change_date(path: &Path) -> Option<String> {
+    use std::fs;
+
+    if let Ok(metadata) = fs::metadata(path) {
+        if let Ok(modified) = metadata.modified() {
+            use chrono::DateTime;
+            let datetime: DateTime<chrono::Utc> = modified.into();
+            return Some(datetime.format("%Y-%m-%d %H:%M:%S %z").to_string());
+        }
+    }
+    None
+}
+
 pub fn get_commit_date(path: &Path, info: &RepoInfo) -> Option<String> {
     use std::process::Command;
 

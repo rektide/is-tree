@@ -5,7 +5,7 @@ use clap::Parser;
 
 mod detect;
 
-use detect::{detect_repo, get_commit_date, RepoType};
+use detect::{detect_repo, get_change_date, get_commit_date, RepoType};
 
 #[derive(Parser)]
 #[command(name = "is-tree")]
@@ -63,13 +63,14 @@ fn main() {
         let info = detect_repo(&path);
         let status = get_status_string(&info);
         let commit_date = get_commit_date(&path, &info);
+        let change_date = get_change_date(&path);
 
         if matches_filters(&filters, &info, &status) {
             results.push(Result {
                 status: status.to_string(),
                 directory: path,
                 commit_date,
-                change_date: None,
+                change_date,
                 workparent: None,
             });
         }
@@ -156,6 +157,7 @@ fn sort_results(results: &mut Vec<Result>, sort_specs: &[SortSpec]) {
                 "status" => a.status.cmp(&b.status),
                 "directory" => compare_paths(&a.directory, &b.directory),
                 "commit-date" => compare_option_dates(&a.commit_date, &b.commit_date),
+                "change-date" => compare_option_dates(&a.change_date, &b.change_date),
                 _ => std::cmp::Ordering::Equal,
             };
 
