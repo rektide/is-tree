@@ -10,6 +10,41 @@ use detect::{detect_repo, get_change_date, get_commit_date, get_workparent, Repo
 
 #[derive(Parser)]
 #[command(name = "is-tree")]
+#[command(after_long_help = "
+DETAILED OPTIONS:
+
+  --filter <TYPES>
+      Filter results by repository types. Multiple types can be comma-separated.
+      Use - suffix for NOT (exclude matching types).
+      
+      Types: git, jj, worktree, worktree-git, worktree-jj
+      
+      Examples:
+        --filter git              Show only Git repositories
+        --filter git,jj           Show Git and Jujutsu repos
+        --filter worktree-         Show non-worktree repos
+        --filter git,jj,worktree- Show Git and JJ but exclude worktrees
+
+  --sort <COLUMNS>
+      Sort results by column(s). Multiple columns can be comma-separated.
+      Use + suffix for ascending (default), - for descending.
+      
+      Columns: status, directory, commit-date, change-date, workparent
+      
+      Examples:
+        --sort status+              Sort by status ascending
+        --sort change-date-          Sort by most recent change first
+        --sort status-,directory+    Sort by status descending, then directory
+
+  --format <STRING>
+      Custom output format using {column} placeholders.
+      
+      Columns: status, directory, commit-date, change-date, workparent
+      
+      Examples:
+        --format '{status} {directory}'
+        --format '{directory} - {status} ({workparent})'
+")]
 struct Args {
     #[arg(short, long)]
     all: bool,
