@@ -11,12 +11,12 @@ is-tree ~/src/compfuzor
 # Test all directories in current path with --all/-a
 is-tree --all
 
-# Filter for specific types
+# Filter for specific types (comma-separated, - for NOT)
 is-tree --all --filter git
-is-tree --all --filter jj
-is-tree --all --filter worktree
-is-tree --all --filter worktree-git
-is-tree --all --filter worktree-jj
+is-tree --all --filter git,jj
+is-tree --all --filter worktree-git,worktree-jj
+is-tree --all --filter worktree-
+is-tree --all --filter git-,jj
 
 # Test specific directories by positional arguments
 is-tree ~/src/compfuzor ~/src/niri-mcp
@@ -42,7 +42,7 @@ is-tree --all --date "%Y-%m-%d %H:%M:%S"
 ## Options
 
 - `--all`, `-a` - Test all directories in current path
-- `--filter <type>` - Filter results by type: `git`, `jj`, `worktree`, `worktree-git`, `worktree-jj`
+- `--filter <type>` - Filter by type(s). Multiple types comma-separated. Suffix `-` for NOT. Types: `git`, `jj`, `worktree`, `worktree-git`, `worktree-jj`
 - `--sort <column>` - Sort by column(s). Multiple columns comma-separated. Suffix `+` for ascending, `-` for descending
 - `--format <string>` - Custom output format with interpolated columns
 - `--date <format>` - Date format string (default: ISO 8601)
