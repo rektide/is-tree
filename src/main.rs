@@ -22,6 +22,9 @@ struct Args {
     #[arg(long)]
     format: Option<String>,
 
+    #[arg(long)]
+    date: Option<String>,
+
     #[arg(name = "DIRECTORIES")]
     directories: Vec<PathBuf>,
 }
