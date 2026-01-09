@@ -2,6 +2,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use clap::Parser;
+use serde::Serialize;
 
 mod detect;
 
@@ -25,14 +26,17 @@ struct Args {
     #[arg(long)]
     date: Option<String>,
 
+    #[arg(long)]
+    json: bool,
+
     #[arg(name = "DIRECTORIES")]
     directories: Vec<PathBuf>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 struct Result {
     status: String,
-    directory: PathBuf,
+    directory: String,
     commit_date: Option<String>,
     change_date: Option<String>,
     workparent: Option<String>,
@@ -69,7 +73,7 @@ fn main() {
         if matches_filters(&filters, &info, &status) {
             results.push(Result {
                 status: status.to_string(),
-                directory: path,
+                directory: path.display().to_string(),
                 commit_date,
                 change_date,
                 workparent,
@@ -79,14 +83,17 @@ fn main() {
 
     sort_results(&mut results, &sort_specs);
 
-    if let Some(format_str) = args.format {
+    if args.json {
+        let json_output = serde_json::to_string_pretty(&results).unwrap();
+        println!("{}", json_output);
+    } else if let Some(format_str) = args.format {
         for result in results {
             let formatted = format_result(&result, &format_str);
             println!("{}", formatted);
         }
     } else {
         for result in results {
-            println!("{} {}", result.status, result.directory.display());
+            println!("{} {}", result.status, result.directory);
         }
     }
 }
@@ -94,7 +101,7 @@ fn main() {
 fn format_result(result: &Result, format_str: &str) -> String {
     let mut output = format_str.to_string();
     output = output.replace("{status}", &result.status);
-    output = output.replace("{directory}", &result.directory.display().to_string());
+    output = output.replace("{directory}", &result.directory);
     output = output.replace("{commit-date}", result.commit_date.as_deref().unwrap_or(""));
     output = output.replace("{change-date}", result.change_date.as_deref().unwrap_or(""));
     output = output.replace("{workparent}", result.workparent.as_deref().unwrap_or(""));
@@ -156,7 +163,7 @@ fn sort_results(results: &mut Vec<Result>, sort_specs: &[SortSpec]) {
         for spec in sort_specs {
             let ordering = match spec.column.as_str() {
                 "status" => a.status.cmp(&b.status),
-                "directory" => compare_paths(&a.directory, &b.directory),
+                "directory" => a.directory.cmp(&b.directory),
                 "commit-date" => compare_option_dates(&a.commit_date, &b.commit_date),
                 "change-date" => compare_option_dates(&a.change_date, &b.change_date),
                 "workparent" => compare_options(&a.workparent, &b.workparent),
