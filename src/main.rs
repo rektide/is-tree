@@ -70,7 +70,7 @@ fn main() {
         let change_date = get_change_date(&path);
         let workparent = get_workparent(&path, &info);
 
-        if matches_filters(&filters, &info, &status) {
+        if matches_filters(&filters, &info, status) {
             results.push(Result {
                 status: status.to_string(),
                 directory: path.display().to_string(),
@@ -139,14 +139,6 @@ fn parse_sort_specs(sort_str: Option<&str>) -> Vec<SortSpec> {
                 part.to_string()
             };
 
-            let descending = if descending {
-                true
-            } else if ascending {
-                false
-            } else {
-                false
-            };
-
             specs.push(SortSpec { column, descending });
         }
     }
@@ -154,7 +146,7 @@ fn parse_sort_specs(sort_str: Option<&str>) -> Vec<SortSpec> {
     specs
 }
 
-fn sort_results(results: &mut Vec<Result>, sort_specs: &[SortSpec]) {
+fn sort_results(results: &mut [Result], sort_specs: &[SortSpec]) {
     if sort_specs.is_empty() {
         return;
     }
@@ -180,10 +172,6 @@ fn sort_results(results: &mut Vec<Result>, sort_specs: &[SortSpec]) {
         }
         std::cmp::Ordering::Equal
     });
-}
-
-fn compare_paths(a: &Path, b: &Path) -> std::cmp::Ordering {
-    a.display().to_string().cmp(&b.display().to_string())
 }
 
 fn compare_option_dates(a: &Option<String>, b: &Option<String>) -> std::cmp::Ordering {
