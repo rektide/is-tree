@@ -5,7 +5,7 @@ use clap::Parser;
 
 mod detect;
 
-use detect::{detect_repo, get_change_date, get_commit_date, RepoType};
+use detect::{detect_repo, get_change_date, get_commit_date, get_workparent, RepoType};
 
 #[derive(Parser)]
 #[command(name = "is-tree")]
@@ -64,6 +64,7 @@ fn main() {
         let status = get_status_string(&info);
         let commit_date = get_commit_date(&path, &info);
         let change_date = get_change_date(&path);
+        let workparent = get_workparent(&path, &info);
 
         if matches_filters(&filters, &info, &status) {
             results.push(Result {
@@ -71,7 +72,7 @@ fn main() {
                 directory: path,
                 commit_date,
                 change_date,
-                workparent: None,
+                workparent,
             });
         }
     }
@@ -158,6 +159,7 @@ fn sort_results(results: &mut Vec<Result>, sort_specs: &[SortSpec]) {
                 "directory" => compare_paths(&a.directory, &b.directory),
                 "commit-date" => compare_option_dates(&a.commit_date, &b.commit_date),
                 "change-date" => compare_option_dates(&a.change_date, &b.change_date),
+                "workparent" => compare_options(&a.workparent, &b.workparent),
                 _ => std::cmp::Ordering::Equal,
             };
 
@@ -178,6 +180,15 @@ fn compare_paths(a: &Path, b: &Path) -> std::cmp::Ordering {
 }
 
 fn compare_option_dates(a: &Option<String>, b: &Option<String>) -> std::cmp::Ordering {
+    match (a, b) {
+        (Some(da), Some(db)) => da.cmp(db),
+        (Some(_), None) => std::cmp::Ordering::Less,
+        (None, Some(_)) => std::cmp::Ordering::Greater,
+        (None, None) => std::cmp::Ordering::Equal,
+    }
+}
+
+fn compare_options<T: Ord>(a: &Option<T>, b: &Option<T>) -> std::cmp::Ordering {
     match (a, b) {
         (Some(da), Some(db)) => da.cmp(db),
         (Some(_), None) => std::cmp::Ordering::Less,

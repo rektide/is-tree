@@ -13,6 +13,43 @@ pub struct RepoInfo {
     pub is_worktree: bool,
 }
 
+pub fn get_workparent(path: &Path, info: &RepoInfo) -> Option<String> {
+    use std::fs;
+
+    if !info.is_worktree {
+        return None;
+    }
+
+    let parent_path = match info.repo_type {
+        RepoType::Git => {
+            let git_file = path.join(".git");
+            if let Ok(content) = fs::read_to_string(&git_file) {
+                if content.starts_with("gitdir: ") {
+                    let gitdir = content.trim_start_matches("gitdir: ").trim();
+                    let gitdir_path = Path::new(gitdir);
+                    gitdir_path.parent()?.parent()?.parent()?.file_name()?.to_str().map(String::from)
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        }
+        RepoType::Jujutsu => {
+            let repo_file = path.join(".jj/repo");
+            if let Ok(content) = fs::read_to_string(&repo_file) {
+                let repo_path = Path::new(content.trim());
+                repo_path.parent()?.parent()?.file_name()?.to_str().map(String::from)
+            } else {
+                None
+            }
+        }
+        RepoType::None => None,
+    };
+
+    parent_path
+}
+
 pub fn get_change_date(path: &Path) -> Option<String> {
     use std::fs;
 
