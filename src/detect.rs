@@ -13,6 +13,65 @@ pub struct RepoInfo {
     pub is_worktree: bool,
 }
 
+pub fn get_commit_date(path: &Path, info: &RepoInfo) -> Option<String> {
+    use std::process::Command;
+
+    match info.repo_type {
+        RepoType::Git => {
+            let output = Command::new("git")
+                .arg("-C")
+                .arg(path)
+                .arg("log")
+                .arg("-1")
+                .arg("--format=%ci")
+                .output();
+
+            match output {
+                Ok(o) if o.status.success() => {
+                    let stdout = String::from_utf8_lossy(&o.stdout);
+                    let trimmed = stdout.trim();
+                    if !trimmed.is_empty() {
+                        return Some(trimmed.to_string());
+                    }
+                }
+                _ => {}
+            }
+            None
+        }
+        RepoType::Jujutsu => {
+            let repo_path = if info.is_worktree {
+                let repo_file = path.join(".jj/repo");
+                std::fs::read_to_string(repo_file).ok().map(|s| s.trim().to_string())
+            } else {
+                Some(path.join(".jj/repo").display().to_string())
+            };
+
+            if let Some(repo) = repo_path {
+                let output = Command::new("git")
+                    .arg("-C")
+                    .arg(&repo)
+                    .arg("log")
+                    .arg("-1")
+                    .arg("--format=%ci")
+                    .output();
+
+                match output {
+                    Ok(o) if o.status.success() => {
+                        let stdout = String::from_utf8_lossy(&o.stdout);
+                        let trimmed = stdout.trim();
+                        if !trimmed.is_empty() {
+                            return Some(trimmed.to_string());
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            None
+        }
+        RepoType::None => None,
+    }
+}
+
 pub fn detect_repo(path: &Path) -> RepoInfo {
     let jj_path = path.join(".jj");
     let git_path = path.join(".git");

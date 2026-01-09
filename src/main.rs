@@ -5,7 +5,7 @@ use clap::Parser;
 
 mod detect;
 
-use detect::{detect_repo, RepoType};
+use detect::{detect_repo, get_commit_date, RepoType};
 
 #[derive(Parser)]
 #[command(name = "is-tree")]
@@ -62,12 +62,13 @@ fn main() {
     for path in paths {
         let info = detect_repo(&path);
         let status = get_status_string(&info);
+        let commit_date = get_commit_date(&path, &info);
 
         if matches_filters(&filters, &info, &status) {
             results.push(Result {
                 status: status.to_string(),
                 directory: path,
-                commit_date: None,
+                commit_date,
                 change_date: None,
                 workparent: None,
             });
@@ -154,6 +155,7 @@ fn sort_results(results: &mut Vec<Result>, sort_specs: &[SortSpec]) {
             let ordering = match spec.column.as_str() {
                 "status" => a.status.cmp(&b.status),
                 "directory" => compare_paths(&a.directory, &b.directory),
+                "commit-date" => compare_option_dates(&a.commit_date, &b.commit_date),
                 _ => std::cmp::Ordering::Equal,
             };
 
@@ -171,6 +173,15 @@ fn sort_results(results: &mut Vec<Result>, sort_specs: &[SortSpec]) {
 
 fn compare_paths(a: &Path, b: &Path) -> std::cmp::Ordering {
     a.display().to_string().cmp(&b.display().to_string())
+}
+
+fn compare_option_dates(a: &Option<String>, b: &Option<String>) -> std::cmp::Ordering {
+    match (a, b) {
+        (Some(da), Some(db)) => da.cmp(db),
+        (Some(_), None) => std::cmp::Ordering::Less,
+        (None, Some(_)) => std::cmp::Ordering::Greater,
+        (None, None) => std::cmp::Ordering::Equal,
+    }
 }
 
 fn parse_filters(filter_str: Option<&str>) -> Vec<Filter> {
