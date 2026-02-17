@@ -13,6 +13,51 @@ pub struct RepoInfo {
     pub is_worktree: bool,
 }
 
+pub fn get_variant(path: &Path, info: &RepoInfo) -> Option<String> {
+    let workspace_name = path.file_name()?.to_str()?;
+
+    let project_name = if info.is_worktree {
+        get_workparent(path, info)?
+    } else {
+        return None;
+    };
+
+    let variant = compute_variant(workspace_name, &project_name);
+    Some(variant)
+}
+
+fn compute_variant(workspace_name: &str, project_name: &str) -> String {
+    if workspace_name.starts_with(project_name) {
+        let suffix = &workspace_name[project_name.len()..];
+        strip_separator(suffix).to_string()
+    } else if let Some(suffix) = extract_embedded_suffix(workspace_name, project_name) {
+        strip_separator(&suffix).to_string()
+    } else {
+        String::new()
+    }
+}
+
+fn strip_separator(s: &str) -> &str {
+    s.strip_prefix('-')
+        .or_else(|| s.strip_prefix('_'))
+        .unwrap_or(s)
+}
+
+fn extract_embedded_suffix(workspace_name: &str, project_name: &str) -> Option<String> {
+    let dash_pattern = format!("-{}-", project_name);
+    let underscore_pattern = format!("_{}_", project_name);
+
+    if let Some(pos) = workspace_name.find(&dash_pattern) {
+        let suffix_start = pos + dash_pattern.len();
+        Some(workspace_name[suffix_start..].to_string())
+    } else if let Some(pos) = workspace_name.find(&underscore_pattern) {
+        let suffix_start = pos + underscore_pattern.len();
+        Some(workspace_name[suffix_start..].to_string())
+    } else {
+        None
+    }
+}
+
 pub fn get_workparent(path: &Path, info: &RepoInfo) -> Option<String> {
     use std::fs;
 
@@ -27,7 +72,13 @@ pub fn get_workparent(path: &Path, info: &RepoInfo) -> Option<String> {
                 if content.starts_with("gitdir: ") {
                     let gitdir = content.trim_start_matches("gitdir: ").trim();
                     let gitdir_path = Path::new(gitdir);
-                    gitdir_path.parent()?.parent()?.parent()?.file_name()?.to_str().map(String::from)
+                    gitdir_path
+                        .parent()?
+                        .parent()?
+                        .parent()?
+                        .file_name()?
+                        .to_str()
+                        .map(String::from)
                 } else {
                     None
                 }
@@ -39,7 +90,12 @@ pub fn get_workparent(path: &Path, info: &RepoInfo) -> Option<String> {
             let repo_file = path.join(".jj/repo");
             if let Ok(content) = fs::read_to_string(&repo_file) {
                 let repo_path = Path::new(content.trim());
-                repo_path.parent()?.parent()?.file_name()?.to_str().map(String::from)
+                repo_path
+                    .parent()?
+                    .parent()?
+                    .file_name()?
+                    .to_str()
+                    .map(String::from)
             } else {
                 None
             }
@@ -91,7 +147,9 @@ pub fn get_commit_date(path: &Path, info: &RepoInfo) -> Option<String> {
         RepoType::Jujutsu => {
             let repo_path = if info.is_worktree {
                 let repo_file = path.join(".jj/repo");
-                std::fs::read_to_string(repo_file).ok().map(|s| s.trim().to_string())
+                std::fs::read_to_string(repo_file)
+                    .ok()
+                    .map(|s| s.trim().to_string())
             } else {
                 Some(path.join(".jj/repo").display().to_string())
             };

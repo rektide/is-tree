@@ -6,7 +6,9 @@ use serde::Serialize;
 
 mod detect;
 
-use detect::{detect_repo, get_change_date, get_commit_date, get_workparent, RepoType};
+use detect::{
+    detect_repo, get_change_date, get_commit_date, get_variant, get_workparent, RepoType,
+};
 
 #[derive(Parser)]
 #[command(name = "is-tree")]
@@ -29,7 +31,7 @@ DETAILED OPTIONS:
       Sort results by column(s). Multiple columns can be comma-separated.
       Use + suffix for ascending (default), - for descending.
       
-      Columns: status, directory, commit-date, change-date, workparent
+      Columns: status, directory, commit-date, change-date, workparent, variant
       
       Examples:
         --sort status+              Sort by status ascending
@@ -39,11 +41,12 @@ DETAILED OPTIONS:
   --format <STRING>
       Custom output format using {column} placeholders.
       
-      Columns: status, directory, commit-date, change-date, workparent
+      Columns: status, directory, commit-date, change-date, workparent, variant
       
       Examples:
         --format '{status} {directory}'
         --format '{directory} - {status} ({workparent})'
+        --format '{directory} ({variant})'
 ")]
 struct Args {
     #[arg(short, long)]
@@ -75,6 +78,7 @@ struct Result {
     commit_date: Option<String>,
     change_date: Option<String>,
     workparent: Option<String>,
+    variant: Option<String>,
 }
 
 fn main() {
@@ -104,6 +108,7 @@ fn main() {
         let commit_date = get_commit_date(&path, &info);
         let change_date = get_change_date(&path);
         let workparent = get_workparent(&path, &info);
+        let variant = get_variant(&path, &info);
 
         if matches_filters(&filters, &info, status) {
             results.push(Result {
@@ -112,6 +117,7 @@ fn main() {
                 commit_date,
                 change_date,
                 workparent,
+                variant,
             });
         }
     }
@@ -140,6 +146,7 @@ fn format_result(result: &Result, format_str: &str) -> String {
     output = output.replace("{commit-date}", result.commit_date.as_deref().unwrap_or(""));
     output = output.replace("{change-date}", result.change_date.as_deref().unwrap_or(""));
     output = output.replace("{workparent}", result.workparent.as_deref().unwrap_or(""));
+    output = output.replace("{variant}", result.variant.as_deref().unwrap_or(""));
     output
 }
 
@@ -194,6 +201,7 @@ fn sort_results(results: &mut [Result], sort_specs: &[SortSpec]) {
                 "commit-date" => compare_option_dates(&a.commit_date, &b.commit_date),
                 "change-date" => compare_option_dates(&a.change_date, &b.change_date),
                 "workparent" => compare_options(&a.workparent, &b.workparent),
+                "variant" => compare_options(&a.variant, &b.variant),
                 _ => std::cmp::Ordering::Equal,
             };
 
