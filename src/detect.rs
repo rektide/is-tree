@@ -27,8 +27,7 @@ pub fn get_variant(path: &Path, info: &RepoInfo) -> Option<String> {
 }
 
 fn compute_variant(workspace_name: &str, project_name: &str) -> String {
-    if workspace_name.starts_with(project_name) {
-        let suffix = &workspace_name[project_name.len()..];
+    if let Some(suffix) = workspace_name.strip_prefix(project_name) {
         strip_separator(suffix).to_string()
     } else if let Some(suffix) = extract_embedded_suffix(workspace_name, project_name) {
         strip_separator(&suffix).to_string()
