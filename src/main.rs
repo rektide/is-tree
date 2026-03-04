@@ -1,7 +1,7 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use clap::{Parser, Subcommand};
+use clap::Parser;
 use serde::Serialize;
 
 mod detect;
@@ -11,20 +11,9 @@ use detect::{
 };
 
 #[derive(Parser)]
-#[command(name = "is-tree")]
-struct Cli {
-    #[command(subcommand)]
-    command: Option<Commands>,
-}
-
-#[derive(Subcommand)]
-enum Commands {
-    #[command(about = "List repository info for directories")]
-    List(ListArgs),
-}
-
-#[derive(Parser)]
-#[command(after_long_help = "
+#[command(
+    name = "is-tree",
+    after_long_help = "
 DETAILED OPTIONS:
 
   --filter <TYPES>
@@ -61,8 +50,9 @@ DETAILED OPTIONS:
         --format '{directory} - {status} ({workparent})'
         --format '{directory} ({variant})'
         --format all
-")]
-struct ListArgs {
+"
+)]
+struct Cli {
     #[arg(short, long)]
     all: bool,
 
@@ -116,18 +106,10 @@ struct JsonResult {
 
 fn main() {
     let cli = Cli::parse();
-
-    match cli.command {
-        None => {
-            eprintln!("Usage: is-tree <command>");
-            eprintln!("Commands: list");
-            std::process::exit(1);
-        }
-        Some(Commands::List(args)) => run_list(args),
-    }
+    run_list(cli);
 }
 
-fn run_list(args: ListArgs) {
+fn run_list(args: Cli) {
     let filters = parse_filters(args.filter.as_deref());
     let sort_specs = parse_sort_specs(args.sort.as_deref());
     let format_str = args.format.as_deref().map(resolve_format_shortcuts);
@@ -139,7 +121,7 @@ fn run_list(args: ListArgs) {
             .map(|p| current_dir.join(p))
             .collect()
     } else if args.directories.is_empty() {
-        eprintln!("Usage: is-tree list <directory> [directories...] | --all");
+        eprintln!("Usage: is-tree <directory> [directories...] | --all");
         std::process::exit(1);
     } else {
         args.directories
