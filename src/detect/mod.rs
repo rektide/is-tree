@@ -1,4 +1,6 @@
 mod date;
+pub mod git;
+pub mod jj;
 mod repo;
 mod variant;
 mod workparent;

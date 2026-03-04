@@ -1,5 +1,8 @@
 use std::path::Path;
 
+use super::git;
+use super::jj;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum RepoType {
     Git,
@@ -18,7 +21,7 @@ pub fn detect_repo(path: &Path) -> RepoInfo {
     let git_path = path.join(".git");
 
     if jj_path.exists() {
-        let is_worktree = is_jujutsu_worktree(&jj_path);
+        let is_worktree = jj::is_worktree(&jj_path);
         return RepoInfo {
             repo_type: RepoType::Jujutsu,
             is_worktree,
@@ -26,7 +29,7 @@ pub fn detect_repo(path: &Path) -> RepoInfo {
     }
 
     if git_path.exists() {
-        let is_worktree = is_git_worktree(&git_path);
+        let is_worktree = git::is_worktree(&git_path);
         return RepoInfo {
             repo_type: RepoType::Git,
             is_worktree,
@@ -37,15 +40,6 @@ pub fn detect_repo(path: &Path) -> RepoInfo {
         repo_type: RepoType::None,
         is_worktree: false,
     }
-}
-
-fn is_jujutsu_worktree(jj_path: &Path) -> bool {
-    let repo_path = jj_path.join("repo");
-    repo_path.is_file()
-}
-
-fn is_git_worktree(git_path: &Path) -> bool {
-    git_path.is_file()
 }
 
 #[cfg(test)]
