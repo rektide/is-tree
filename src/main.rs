@@ -5,7 +5,6 @@ use clap::{Parser, Subcommand};
 use serde::Serialize;
 
 mod detect;
-mod jj;
 
 use detect::{
     detect_repo, get_ahead, get_change_date, get_commit_date, get_variant, get_workparent, RepoType,
@@ -22,8 +21,6 @@ struct Cli {
 enum Commands {
     #[command(about = "List repository info for directories")]
     List(ListArgs),
-    #[command(about = "Show sync status: commits since last bookmark")]
-    SyncStatus(SyncStatusArgs),
 }
 
 #[derive(Parser)]
@@ -86,12 +83,6 @@ struct ListArgs {
     directories: Vec<PathBuf>,
 }
 
-#[derive(Parser)]
-struct SyncStatusArgs {
-    #[arg(name = "DIRECTORY")]
-    directory: Option<PathBuf>,
-}
-
 #[derive(Debug, Clone, Serialize)]
 struct Result {
     status: String,
@@ -109,11 +100,10 @@ fn main() {
     match cli.command {
         None => {
             eprintln!("Usage: is-tree <command>");
-            eprintln!("Commands: list, sync-status");
+            eprintln!("Commands: list");
             std::process::exit(1);
         }
         Some(Commands::List(args)) => run_list(args),
-        Some(Commands::SyncStatus(args)) => jj::run_sync_status(args.directory),
     }
 }
 
