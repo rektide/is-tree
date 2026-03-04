@@ -8,7 +8,7 @@ mod detect;
 mod jj;
 
 use detect::{
-    detect_repo, get_change_date, get_commit_date, get_variant, get_workparent, RepoType,
+    detect_repo, get_ahead, get_change_date, get_commit_date, get_variant, get_workparent, RepoType,
 };
 
 #[derive(Parser)]
@@ -46,7 +46,7 @@ DETAILED OPTIONS:
       Sort results by column(s). Multiple columns can be comma-separated.
       Use + suffix for ascending (default), - for descending.
       
-      Columns: status, directory, commit-date, change-date, workparent, variant
+      Columns: status, directory, commit-date, change-date, workparent, variant, ahead
       
       Examples:
         --sort status+              Sort by status ascending
@@ -56,7 +56,7 @@ DETAILED OPTIONS:
   --format <STRING>
       Custom output format using {column} placeholders.
       
-      Columns: status, directory, commit-date, change-date, workparent, variant
+      Columns: status, directory, commit-date, change-date, workparent, variant, ahead
       
       Examples:
         --format '{status} {directory}'
@@ -100,6 +100,7 @@ struct Result {
     change_date: Option<String>,
     workparent: Option<String>,
     variant: Option<String>,
+    ahead: Option<isize>,
 }
 
 fn main() {
@@ -142,6 +143,7 @@ fn run_list(args: ListArgs) {
         let change_date = get_change_date(&path);
         let workparent = get_workparent(&path, &info);
         let variant = get_variant(&path, &info);
+        let ahead = get_ahead(&path, &info);
 
         if matches_filters(&filters, &info, status) {
             results.push(Result {
@@ -151,6 +153,7 @@ fn run_list(args: ListArgs) {
                 change_date,
                 workparent,
                 variant,
+                ahead,
             });
         }
     }
@@ -180,6 +183,10 @@ fn format_result(result: &Result, format_str: &str) -> String {
     output = output.replace("{change-date}", result.change_date.as_deref().unwrap_or(""));
     output = output.replace("{workparent}", result.workparent.as_deref().unwrap_or(""));
     output = output.replace("{variant}", result.variant.as_deref().unwrap_or(""));
+    output = output.replace(
+        "{ahead}",
+        &result.ahead.map(|x| x.to_string()).unwrap_or_default(),
+    );
     output
 }
 
@@ -235,6 +242,7 @@ fn sort_results(results: &mut [Result], sort_specs: &[SortSpec]) {
                 "change-date" => compare_option_dates(&a.change_date, &b.change_date),
                 "workparent" => compare_options(&a.workparent, &b.workparent),
                 "variant" => compare_options(&a.variant, &b.variant),
+                "ahead" => compare_options(&a.ahead, &b.ahead),
                 _ => std::cmp::Ordering::Equal,
             };
 

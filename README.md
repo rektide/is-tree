@@ -31,6 +31,7 @@ is-tree --all --sort status-,change-date+
 
 # Custom output format with interpolated columns
 is-tree --all --format "{status} {directory} {commit-date} {change-date} {workparent}"
+is-tree --all --format "{status} {directory} {ahead}"
 
 # Output as JSON
 is-tree --all --json
@@ -60,6 +61,7 @@ Available columns for custom format:
 - `workparent` - Directory name of the workparent (without path), for worktrees only
 - `commit-date` - Most recent commit date
 - `change-date` - Most recent file change date
+- `ahead` - Number of local JJ commits ahead of tracked remote bookmarks
 
 ### Status values
 - `git` - Git repository (not Jujutsu, not a worktree)
