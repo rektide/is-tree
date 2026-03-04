@@ -52,6 +52,7 @@ DETAILED OPTIONS:
 
   --format <STRING>
       Custom output format using {column} placeholders.
+      Use --format all as a shortcut for all columns.
       
       Columns: status, directory, commit-date, change-date, workparent, variant, ahead
       
@@ -59,6 +60,7 @@ DETAILED OPTIONS:
         --format '{status} {directory}'
         --format '{directory} - {status} ({workparent})'
         --format '{directory} ({variant})'
+        --format all
 ")]
 struct ListArgs {
     #[arg(short, long)]
@@ -94,6 +96,24 @@ struct Result {
     ahead: Option<isize>,
 }
 
+#[derive(Debug, Clone, Serialize)]
+struct JsonResult {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    status: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    directory: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    commit_date: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    change_date: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    workparent: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    variant: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    ahead: Option<isize>,
+}
+
 fn main() {
     let cli = Cli::parse();
 
@@ -110,6 +130,7 @@ fn main() {
 fn run_list(args: ListArgs) {
     let filters = parse_filters(args.filter.as_deref());
     let sort_specs = parse_sort_specs(args.sort.as_deref());
+    let format_str = args.format.as_deref().map(resolve_format_shortcuts);
 
     let paths = if args.all {
         let current_dir = Path::new(".");
@@ -151,17 +172,98 @@ fn run_list(args: ListArgs) {
     sort_results(&mut results, &sort_specs);
 
     if args.json {
-        let json_output = serde_json::to_string_pretty(&results).unwrap();
+        let columns = if let Some(fmt) = format_str {
+            parse_columns_from_format(fmt)
+        } else {
+            parse_columns_from_format("{status} {directory}")
+        };
+        let json_results: Vec<JsonResult> = results
+            .iter()
+            .map(|r| filter_json_result(r, &columns))
+            .collect();
+        let json_output = serde_json::to_string_pretty(&json_results).unwrap();
         println!("{}", json_output);
-    } else if let Some(format_str) = args.format {
+    } else if let Some(format_str) = format_str {
         for result in results {
-            let formatted = format_result(&result, &format_str);
+            let formatted = format_result(&result, format_str);
             println!("{}", formatted);
         }
     } else {
         for result in results {
             println!("{} {}", result.status, result.directory);
         }
+    }
+}
+
+fn resolve_format_shortcuts(format: &str) -> &str {
+    if format == "all" {
+        "{status} {directory} {commit-date} {change-date} {workparent} {variant} {ahead}"
+    } else {
+        format
+    }
+}
+
+fn parse_columns_from_format(format: &str) -> Vec<String> {
+    let mut columns = Vec::new();
+    let mut chars = format.chars().peekable();
+
+    while let Some(ch) = chars.next() {
+        if ch == '{' {
+            let mut col = String::new();
+            while let Some(&next) = chars.peek() {
+                if next == '}' {
+                    chars.next();
+                    break;
+                }
+                col.push(chars.next().unwrap());
+            }
+            let trimmed = col.trim();
+            if !trimmed.is_empty() {
+                columns.push(trimmed.to_string());
+            }
+        }
+    }
+
+    columns
+}
+
+fn filter_json_result(result: &Result, columns: &[String]) -> JsonResult {
+    JsonResult {
+        status: if columns.contains(&"status".to_string()) {
+            Some(result.status.clone())
+        } else {
+            None
+        },
+        directory: if columns.contains(&"directory".to_string()) {
+            Some(result.directory.clone())
+        } else {
+            None
+        },
+        commit_date: if columns.contains(&"commit-date".to_string()) {
+            result.commit_date.clone()
+        } else {
+            None
+        },
+        change_date: if columns.contains(&"change-date".to_string()) {
+            result.change_date.clone()
+        } else {
+            None
+        },
+        workparent: if columns.contains(&"workparent".to_string()) {
+            result.workparent.clone()
+        } else {
+            None
+        },
+        variant: if columns.contains(&"variant".to_string()) {
+            result.variant.clone()
+        } else {
+            None
+        },
+        ahead: if columns.contains(&"ahead".to_string()) {
+            result.ahead
+        } else {
+            None
+        },
     }
 }
 

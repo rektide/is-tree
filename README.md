@@ -32,9 +32,11 @@ is-tree --all --sort status-,change-date+
 # Custom output format with interpolated columns
 is-tree --all --format "{status} {directory} {commit-date} {change-date} {workparent}"
 is-tree --all --format "{status} {directory} {ahead}"
+is-tree --all --format all
 
-# Output as JSON
+# Output as JSON (respects --format for column selection)
 is-tree --all --json
+is-tree --all --format "{status} {directory} {ahead}" --json
 
 # Custom date format
 is-tree --all --date "%Y-%m-%d %H:%M:%S"
@@ -46,6 +48,7 @@ is-tree --all --date "%Y-%m-%d %H:%M:%S"
 - `--filter <type>` - Filter by type(s). Multiple types comma-separated. Suffix `-` for NOT. Types: `git`, `jj`, `worktree`, `worktree-git`, `worktree-jj`
 - `--sort <column>` - Sort by column(s). Multiple columns comma-separated. Suffix `+` for ascending, `-` for descending
 - `--format <string>` - Custom output format with interpolated columns
+  - Shortcut: `--format all` includes all available columns
 - `--date <format>` - Date format string (default: ISO 8601)
 - `--json` - Output results in JSON format
 - Positional arguments - Test specific directories
@@ -71,7 +74,7 @@ Available columns for custom format:
 - `none` - Not a recognized repository
 
 ### JSON Output
-When `--json` is specified, output is an array of objects with all available columns as fields.
+When `--json` is specified, output is an array of objects. By default, includes `status` and `directory` columns. Use `--format` to control which columns appear in the JSON output.
 
 ## Detection
 
