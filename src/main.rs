@@ -78,6 +78,15 @@ struct Cli {
     #[arg(long, default_value = " ")]
     separator: String,
 
+    #[arg(long)]
+    jj: bool,
+
+    #[arg(long)]
+    git: bool,
+
+    #[arg(long)]
+    beads: bool,
+
     #[arg(name = "DIRECTORIES")]
     directories: Vec<PathBuf>,
 }
@@ -122,7 +131,7 @@ fn main() {
 fn run_list(args: Cli) {
     let filters = parse_filters(args.filter.as_deref());
     let sort_specs = parse_sort_specs(args.sort.as_deref());
-    let format_str = args.format.as_deref().map(resolve_format_shortcuts);
+    let format_str = build_format_string(&args);
 
     let paths = if args.all {
         let current_dir = Path::new(".");
@@ -165,19 +174,17 @@ fn run_list(args: Cli) {
 
     sort_results(&mut results, &sort_specs);
 
+    let format_str = format_str.as_deref().unwrap_or("{status} {directory}");
+
     if args.json {
-        let columns = if let Some(fmt) = format_str {
-            parse_columns_from_format(fmt)
-        } else {
-            parse_columns_from_format("{status} {directory}")
-        };
+        let columns = parse_columns_from_format(format_str);
         let json_results: Vec<JsonResult> = results
             .iter()
             .map(|r| filter_json_result(r, &columns))
             .collect();
         let json_output = serde_json::to_string_pretty(&json_results).unwrap();
         println!("{}", json_output);
-    } else if let Some(format_str) = format_str {
+    } else {
         let sep = &args.separator;
         if args.header {
             println!("{}", format_header(format_str, sep));
@@ -186,15 +193,29 @@ fn run_list(args: Cli) {
             let formatted = format_result(&result, format_str, sep);
             println!("{}", formatted);
         }
-    } else {
-        let sep = &args.separator;
-        if args.header {
-            println!("STATUS{}DIRECTORY", sep);
-        }
-        for result in results {
-            println!("{}{}{}", result.status, sep, result.directory);
-        }
     }
+}
+
+fn build_format_string(args: &Cli) -> Option<String> {
+    if let Some(fmt) = &args.format {
+        return Some(resolve_format_shortcuts(fmt).to_string());
+    }
+
+    let mut columns = vec!["{status}", "{directory}"];
+
+    if args.jj {
+        columns.push("{ahead}");
+    }
+
+    if args.git {
+        // Git-specific columns would go here when implemented
+    }
+
+    if args.beads {
+        columns.push("{beads}");
+    }
+
+    Some(columns.join(" "))
 }
 
 fn resolve_format_shortcuts(format: &str) -> &str {
