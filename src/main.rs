@@ -71,6 +71,12 @@ struct Cli {
     #[arg(long)]
     json: bool,
 
+    #[arg(long)]
+    header: bool,
+
+    #[arg(long, default_value = " ")]
+    separator: String,
+
     #[arg(name = "DIRECTORIES")]
     directories: Vec<PathBuf>,
 }
@@ -166,13 +172,21 @@ fn run_list(args: Cli) {
         let json_output = serde_json::to_string_pretty(&json_results).unwrap();
         println!("{}", json_output);
     } else if let Some(format_str) = format_str {
+        let sep = &args.separator;
+        if args.header {
+            println!("{}", format_header(format_str, sep));
+        }
         for result in results {
-            let formatted = format_result(&result, format_str);
+            let formatted = format_result(&result, format_str, sep);
             println!("{}", formatted);
         }
     } else {
+        let sep = &args.separator;
+        if args.header {
+            println!("STATUS{}DIRECTORY", sep);
+        }
         for result in results {
-            println!("{} {}", result.status, result.directory);
+            println!("{}{}{}", result.status, sep, result.directory);
         }
     }
 }
@@ -249,7 +263,22 @@ fn filter_json_result(result: &Result, columns: &[String]) -> JsonResult {
     }
 }
 
-fn format_result(result: &Result, format_str: &str) -> String {
+fn format_header(format_str: &str, separator: &str) -> String {
+    let mut output = format_str.to_string();
+    output = output.replace("{status}", "STATUS");
+    output = output.replace("{directory}", "DIRECTORY");
+    output = output.replace("{commit-date}", "COMMIT-DATE");
+    output = output.replace("{change-date}", "CHANGE-DATE");
+    output = output.replace("{workparent}", "WORKPARENT");
+    output = output.replace("{variant}", "VARIANT");
+    output = output.replace("{ahead}", "AHEAD");
+    if separator != " " {
+        output = output.replace(" ", separator);
+    }
+    output
+}
+
+fn format_result(result: &Result, format_str: &str, separator: &str) -> String {
     let mut output = format_str.to_string();
     output = output.replace("{status}", &result.status);
     output = output.replace("{directory}", &result.directory);
@@ -261,6 +290,9 @@ fn format_result(result: &Result, format_str: &str) -> String {
         "{ahead}",
         &result.ahead.map(|x| x.to_string()).unwrap_or_default(),
     );
+    if separator != " " {
+        output = output.replace(" ", separator);
+    }
     output
 }
 
