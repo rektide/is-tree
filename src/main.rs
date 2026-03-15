@@ -7,7 +7,8 @@ use serde::Serialize;
 mod detect;
 
 use detect::{
-    detect_repo, get_ahead, get_change_date, get_commit_date, get_variant, get_workparent, RepoType,
+    detect_repo, get_ahead, get_beads_prefix, get_change_date, get_commit_date, get_variant,
+    get_workparent, RepoType,
 };
 
 #[derive(Parser)]
@@ -32,7 +33,7 @@ DETAILED OPTIONS:
       Sort results by column(s). Multiple columns can be comma-separated.
       Use + suffix for ascending (default), - for descending.
       
-      Columns: status, directory, commit-date, change-date, workparent, variant, ahead
+      Columns: status, directory, commit-date, change-date, workparent, variant, ahead, beads
       
       Examples:
         --sort status+              Sort by status ascending
@@ -43,7 +44,7 @@ DETAILED OPTIONS:
       Custom output format using {column} placeholders.
       Use --format all as a shortcut for all columns.
       
-      Columns: status, directory, commit-date, change-date, workparent, variant, ahead
+      Columns: status, directory, commit-date, change-date, workparent, variant, ahead, beads
       
       Examples:
         --format '{status} {directory}'
@@ -90,6 +91,7 @@ struct Result {
     workparent: Option<String>,
     variant: Option<String>,
     ahead: Option<isize>,
+    beads: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -108,6 +110,8 @@ struct JsonResult {
     variant: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     ahead: Option<isize>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    beads: Option<String>,
 }
 
 fn main() {
@@ -143,6 +147,7 @@ fn run_list(args: Cli) {
         let workparent = get_workparent(&path, &info);
         let variant = get_variant(&path, &info);
         let ahead = get_ahead(&path, &info);
+        let beads = get_beads_prefix(&path);
 
         if matches_filters(&filters, &info, status) {
             results.push(Result {
@@ -153,6 +158,7 @@ fn run_list(args: Cli) {
                 workparent,
                 variant,
                 ahead,
+                beads,
             });
         }
     }
@@ -193,7 +199,7 @@ fn run_list(args: Cli) {
 
 fn resolve_format_shortcuts(format: &str) -> &str {
     if format == "all" {
-        "{status} {directory} {commit-date} {change-date} {workparent} {variant} {ahead}"
+        "{status} {directory} {commit-date} {change-date} {workparent} {variant} {ahead} {beads}"
     } else {
         format
     }
@@ -260,6 +266,11 @@ fn filter_json_result(result: &Result, columns: &[String]) -> JsonResult {
         } else {
             None
         },
+        beads: if columns.contains(&"beads".to_string()) {
+            result.beads.clone()
+        } else {
+            None
+        },
     }
 }
 
@@ -272,6 +283,7 @@ fn format_header(format_str: &str, separator: &str) -> String {
     output = output.replace("{workparent}", "WORKPARENT");
     output = output.replace("{variant}", "VARIANT");
     output = output.replace("{ahead}", "AHEAD");
+    output = output.replace("{beads}", "BEADS");
     if separator != " " {
         output = output.replace(" ", separator);
     }
@@ -290,6 +302,7 @@ fn format_result(result: &Result, format_str: &str, separator: &str) -> String {
         "{ahead}",
         &result.ahead.map(|x| x.to_string()).unwrap_or_default(),
     );
+    output = output.replace("{beads}", result.beads.as_deref().unwrap_or(""));
     if separator != " " {
         output = output.replace(" ", separator);
     }
@@ -349,6 +362,7 @@ fn sort_results(results: &mut [Result], sort_specs: &[SortSpec]) {
                 "workparent" => compare_options(&a.workparent, &b.workparent),
                 "variant" => compare_options(&a.variant, &b.variant),
                 "ahead" => compare_options(&a.ahead, &b.ahead),
+                "beads" => compare_options(&a.beads, &b.beads),
                 _ => std::cmp::Ordering::Equal,
             };
 
