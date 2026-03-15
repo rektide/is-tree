@@ -1,5 +1,6 @@
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 use std::path::Path;
-use std::process::Command;
 
 pub fn get_beads_prefix(path: &Path) -> Option<String> {
     let beads_dir = path.join(".beads");
@@ -7,23 +8,24 @@ pub fn get_beads_prefix(path: &Path) -> Option<String> {
         return None;
     }
 
-    let db_path = beads_dir.join("beads.db");
-    if !db_path.exists() {
+    let issues_path = beads_dir.join("issues.jsonl");
+    if !issues_path.exists() {
         return None;
     }
 
-    let output = Command::new("sqlite3")
-        .arg(&db_path)
-        .arg("SELECT value FROM config WHERE key = 'issue_prefix'")
-        .output()
-        .ok()?;
+    let file = File::open(&issues_path).ok()?;
+    let mut reader = BufReader::new(file);
+    let mut first_line = String::new();
+    reader.read_line(&mut first_line).ok()?;
 
-    if !output.status.success() {
+    if first_line.trim().is_empty() {
         return None;
     }
 
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    let prefix = stdout.trim();
+    let parsed: serde_json::Value = serde_json::from_str(&first_line).ok()?;
+    let id = parsed.get("id")?.as_str()?;
+
+    let prefix = id.rsplit_once('-').map(|(p, _)| p)?;
     if prefix.is_empty() {
         return None;
     }
