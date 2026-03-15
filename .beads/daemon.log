@@ -1,0 +1,624 @@
+time=2026-01-08T20:40:57.387-05:00 level=INFO msg="Daemon started (interval: %v, auto-commit: %v, auto-push: %v)" !BADKEY=5s !BADKEY=false !BADKEY=false
+time=2026-01-08T20:40:57.387-05:00 level=INFO msg="using database" path=/home/rektide/src/is-tree/.beads/beads.db
+time=2026-01-08T20:40:57.402-05:00 level=INFO msg="database opened" path=/home/rektide/src/is-tree/.beads/beads.db freshness_checking=true
+time=2026-01-08T20:40:57.402-05:00 level=INFO msg="upgrading .beads/.gitignore"
+time=2026-01-08T20:40:57.402-05:00 level=WARN msg="failed to upgrade .gitignore" error="open .beads/.gitignore: no such file or directory"
+time=2026-01-08T20:40:57.403-05:00 level=INFO msg="Repository fingerprint validated: %s" !BADKEY=68c50db1
+time=2026-01-08T20:40:57.403-05:00 level=INFO msg="starting RPC server" socket=/home/rektide/src/is-tree/.beads/bd.sock
+time=2026-01-08T20:40:57.403-05:00 level=INFO msg="RPC server ready (socket listening)"
+time=2026-01-08T20:40:57.407-05:00 level=INFO msg="registered in global registry"
+time=2026-01-08T20:40:57.407-05:00 level=INFO msg="Starting %s..." !BADKEY="sync cycle"
+time=2026-01-08T20:40:57.407-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-08T20:40:57.838-05:00 level=INFO msg="Pull failed: %v" !BADKEY="git pull failed: exit status 1\nfatal: couldn't find remote ref main\n"
+time=2026-01-08T20:40:57.838-05:00 level=INFO msg="monitoring parent process" pid=0
+time=2026-01-08T20:40:57.838-05:00 level=INFO msg="using event-driven mode"
+time=2026-01-08T20:40:57.838-05:00 level=INFO msg="Auto-pull disabled: use 'git pull' manually to sync remote changes"
+time=2026-01-08T20:40:57.838-05:00 level=INFO msg="Mutation detected: %s %s" create=is-tree-xxv
+time=2026-01-08T20:40:58.339-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-08T20:40:58.339-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-08T20:40:58.352-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-08T20:40:58.352-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T20:40:58.355-05:00 level=INFO msg="Export complete"
+time=2026-01-08T20:40:59.353-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-08T20:40:59.353-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-08T20:40:59.353-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-08T20:41:12.310-05:00 level=INFO msg="Mutation detected: %s %s" create=is-tree-uh7
+time=2026-01-08T20:41:12.810-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-08T20:41:12.810-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-08T20:41:12.822-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T20:41:12.822-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-08T20:41:12.826-05:00 level=INFO msg="Export complete"
+time=2026-01-08T20:41:13.285-05:00 level=INFO msg="Mutation detected: %s %s" create=is-tree-b47
+time=2026-01-08T20:41:13.786-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-08T20:41:13.786-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-08T20:41:13.797-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T20:41:13.797-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-08T20:41:13.801-05:00 level=INFO msg="Export complete"
+time=2026-01-08T20:41:13.824-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-08T20:41:13.824-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-08T20:41:13.825-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-08T20:41:14.102-05:00 level=INFO msg="Mutation detected: %s %s" create=is-tree-e8o
+time=2026-01-08T20:41:14.603-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-08T20:41:14.603-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-08T20:41:14.614-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-08T20:41:14.614-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T20:41:14.617-05:00 level=INFO msg="Export complete"
+time=2026-01-08T20:41:14.799-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-08T20:41:14.799-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-08T20:41:14.799-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-08T20:41:15.615-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-08T20:41:15.615-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-08T20:41:15.616-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-08T20:41:24.457-05:00 level=INFO msg="Mutation detected: %s %s" create=is-tree-bdv
+time=2026-01-08T20:41:24.958-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-08T20:41:24.958-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-08T20:41:24.969-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-08T20:41:24.969-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T20:41:24.969-05:00 level=INFO msg="File change detected: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T20:41:24.972-05:00 level=INFO msg="Export complete"
+time=2026-01-08T20:41:25.165-05:00 level=INFO msg="Mutation detected: %s %s" create=is-tree-3rl
+time=2026-01-08T20:41:25.665-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-08T20:41:25.666-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-08T20:41:25.685-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T20:41:25.685-05:00 level=INFO msg="File change detected: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T20:41:25.685-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-08T20:41:25.689-05:00 level=INFO msg="Export complete"
+time=2026-01-08T20:41:25.970-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-08T20:41:25.970-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-08T20:41:25.971-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-08T20:41:26.686-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-08T20:41:26.686-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-08T20:41:26.687-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-08T20:41:27.778-05:00 level=INFO msg="Mutation detected: %s %s" create=is-tree-wsl
+time=2026-01-08T20:41:28.279-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-08T20:41:28.279-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-08T20:41:28.292-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T20:41:28.292-05:00 level=INFO msg="File change detected: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T20:41:28.292-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-08T20:41:28.295-05:00 level=INFO msg="Export complete"
+time=2026-01-08T20:41:29.293-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-08T20:41:29.293-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-08T20:41:29.293-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-08T20:41:34.725-05:00 level=INFO msg="Mutation detected: %s %s" create=is-tree-070
+time=2026-01-08T20:41:35.226-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-08T20:41:35.226-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-08T20:41:35.239-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-08T20:41:35.239-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T20:41:35.243-05:00 level=INFO msg="Export complete"
+time=2026-01-08T20:41:35.591-05:00 level=INFO msg="Mutation detected: %s %s" create=is-tree-sro
+time=2026-01-08T20:41:36.092-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-08T20:41:36.092-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-08T20:41:36.104-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T20:41:36.104-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-08T20:41:36.108-05:00 level=INFO msg="Export complete"
+time=2026-01-08T20:41:36.239-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-08T20:41:36.239-05:00 level=INFO msg="Mutation detected: %s %s" create=is-tree-1hz
+time=2026-01-08T20:41:36.239-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-08T20:41:36.239-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-08T20:41:36.740-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-08T20:41:36.740-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-08T20:41:36.752-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T20:41:36.752-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-08T20:41:36.752-05:00 level=INFO msg="File change detected: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T20:41:36.756-05:00 level=INFO msg="Export complete"
+time=2026-01-08T20:41:37.105-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-08T20:41:37.105-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-08T20:41:37.106-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-08T20:41:37.753-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-08T20:41:37.754-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-08T20:41:37.754-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-08T20:41:40.246-05:00 level=INFO msg="Mutation detected: %s %s" create=is-tree-00n
+time=2026-01-08T20:41:40.747-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-08T20:41:40.747-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-08T20:41:40.769-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-08T20:41:40.769-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T20:41:40.769-05:00 level=INFO msg="File change detected: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T20:41:40.773-05:00 level=INFO msg="Export complete"
+time=2026-01-08T20:41:41.771-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-08T20:41:41.771-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-08T20:41:41.771-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-08T20:41:43.100-05:00 level=INFO msg="Mutation detected: %s %s" create=is-tree-vv0
+time=2026-01-08T20:41:43.601-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-08T20:41:43.601-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-08T20:41:43.615-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-08T20:41:43.615-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T20:41:43.615-05:00 level=INFO msg="File change detected: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T20:41:43.618-05:00 level=INFO msg="Export complete"
+time=2026-01-08T20:41:44.616-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-08T20:41:44.616-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-08T20:41:44.616-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-08T20:41:48.072-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-uh7
+time=2026-01-08T20:41:48.411-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-b47
+time=2026-01-08T20:41:48.771-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-e8o
+time=2026-01-08T20:41:49.272-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-08T20:41:49.272-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-08T20:41:49.274-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T20:41:49.274-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-08T20:41:49.275-05:00 level=INFO msg="Export complete"
+time=2026-01-08T20:41:49.299-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-bdv
+time=2026-01-08T20:41:49.673-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-3rl
+time=2026-01-08T20:41:50.042-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-wsl
+time=2026-01-08T20:41:50.275-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-08T20:41:50.275-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-08T20:41:50.275-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-08T20:41:50.417-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-070
+time=2026-01-08T20:41:50.790-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-sro
+time=2026-01-08T20:41:51.171-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-1hz
+time=2026-01-08T20:41:51.546-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-00n
+time=2026-01-08T20:41:51.930-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-vv0
+time=2026-01-08T20:41:52.430-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-08T20:41:52.430-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-08T20:41:52.433-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T20:41:52.433-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-08T20:41:52.433-05:00 level=INFO msg="Export complete"
+time=2026-01-08T20:41:53.434-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-08T20:41:53.435-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-08T20:41:53.435-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-08T20:44:39.984-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-b47
+time=2026-01-08T20:44:40.476-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-e8o
+time=2026-01-08T20:44:40.976-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-08T20:44:40.976-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-08T20:44:40.979-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T20:44:40.979-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-08T20:44:40.979-05:00 level=INFO msg="Export complete"
+time=2026-01-08T20:44:41.016-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-bdv
+time=2026-01-08T20:44:41.516-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-08T20:44:41.516-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-08T20:44:41.519-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T20:44:41.519-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-08T20:44:41.519-05:00 level=INFO msg="Export complete"
+time=2026-01-08T20:44:41.981-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-08T20:44:41.981-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-08T20:44:41.981-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-08T20:44:42.520-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-08T20:44:42.520-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-08T20:44:42.520-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-08T20:44:46.292-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-wsl
+time=2026-01-08T20:44:46.793-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-08T20:44:46.793-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-08T20:44:46.796-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T20:44:46.796-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-08T20:44:46.796-05:00 level=INFO msg="Export complete"
+time=2026-01-08T20:44:46.812-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-070
+time=2026-01-08T20:44:47.253-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-sro
+time=2026-01-08T20:44:47.650-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-1hz
+time=2026-01-08T20:44:47.798-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-08T20:44:47.798-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-08T20:44:47.798-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-08T20:44:48.135-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-00n
+time=2026-01-08T20:44:48.636-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-08T20:44:48.636-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-08T20:44:48.638-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T20:44:48.638-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-08T20:44:48.639-05:00 level=INFO msg="Export complete"
+time=2026-01-08T20:44:49.640-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-08T20:44:49.640-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-08T20:44:49.640-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-08T20:44:56.128-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-vv0
+time=2026-01-08T20:44:56.628-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-08T20:44:56.628-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-08T20:44:56.631-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T20:44:56.631-05:00 level=INFO msg="File change detected: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T20:44:56.631-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-08T20:44:56.631-05:00 level=INFO msg="Export complete"
+time=2026-01-08T20:44:57.632-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-08T20:44:57.632-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-08T20:44:57.633-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-08T20:45:09.274-05:00 level=INFO msg="Mutation detected: %s %s" status=is-tree-3rl
+time=2026-01-08T20:45:09.775-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-08T20:45:09.775-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-08T20:45:09.778-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T20:45:09.778-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-08T20:45:09.778-05:00 level=INFO msg="Export complete"
+time=2026-01-08T20:45:10.779-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-08T20:45:10.779-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-08T20:45:10.779-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-08T21:00:00.247-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-e8o
+time=2026-01-08T21:00:00.748-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-08T21:00:00.748-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-08T21:00:00.751-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T21:00:00.751-05:00 level=INFO msg="File change detected: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T21:00:00.751-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-08T21:00:00.752-05:00 level=INFO msg="Export complete"
+time=2026-01-08T21:00:01.752-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-08T21:00:01.753-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-08T21:00:01.753-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-08T21:02:17.357-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-vv0
+time=2026-01-08T21:02:17.688-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-00n
+time=2026-01-08T21:02:18.035-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-1hz
+time=2026-01-08T21:02:18.385-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-sro
+time=2026-01-08T21:02:18.886-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-08T21:02:18.886-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-08T21:02:18.889-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T21:02:18.889-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-08T21:02:18.889-05:00 level=INFO msg="Export complete"
+time=2026-01-08T21:02:19.006-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-070
+time=2026-01-08T21:02:19.499-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-wsl
+time=2026-01-08T21:02:19.891-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-08T21:02:19.891-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-08T21:02:19.891-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-08T21:02:19.999-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-08T21:02:19.999-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-08T21:02:20.002-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T21:02:20.002-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-08T21:02:20.002-05:00 level=INFO msg="Export complete"
+time=2026-01-08T21:02:20.225-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-bdv
+time=2026-01-08T21:02:20.725-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-08T21:02:20.725-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-08T21:02:20.728-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T21:02:20.728-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-08T21:02:20.728-05:00 level=INFO msg="Export complete"
+time=2026-01-08T21:02:20.878-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-e8o
+time=2026-01-08T21:02:21.003-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-08T21:02:21.003-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-08T21:02:21.004-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-08T21:02:21.261-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-b47
+time=2026-01-08T21:02:21.728-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-08T21:02:21.728-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-08T21:02:21.729-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-08T21:02:21.762-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-08T21:02:21.762-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-08T21:02:21.765-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T21:02:21.765-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-08T21:02:21.765-05:00 level=INFO msg="Export complete"
+time=2026-01-08T21:02:22.766-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-08T21:02:22.766-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-08T21:02:22.766-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-08T22:33:11.411-05:00 level=INFO msg="Mutation detected: %s %s" status=is-tree-uh7
+time=2026-01-08T22:33:11.911-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-08T22:33:11.911-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-08T22:33:11.914-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-08T22:33:11.914-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T22:33:11.914-05:00 level=INFO msg="Export complete"
+time=2026-01-08T22:33:12.916-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-08T22:33:12.916-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-08T22:33:12.916-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-08T22:35:12.625-05:00 level=INFO msg="Mutation detected: %s %s" status=is-tree-uh7
+time=2026-01-08T22:35:12.626-05:00 level=INFO msg="Mutation detected: %s %s" comment=is-tree-uh7
+time=2026-01-08T22:35:13.127-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-08T22:35:13.127-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-08T22:35:13.130-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T22:35:13.130-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-08T22:35:13.130-05:00 level=INFO msg="Export complete"
+time=2026-01-08T22:35:14.131-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-08T22:35:14.131-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-08T22:35:14.131-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-08T22:35:15.823-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-uh7
+time=2026-01-08T22:35:16.324-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-08T22:35:16.324-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-08T22:35:16.327-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T22:35:16.327-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-08T22:35:16.327-05:00 level=INFO msg="Export complete"
+time=2026-01-08T22:35:17.307-05:00 level=INFO msg="Mutation detected: %s %s" status=is-tree-uh7
+time=2026-01-08T22:35:17.328-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-08T22:35:17.328-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-08T22:35:17.329-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-08T22:35:17.807-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-08T22:35:17.807-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-08T22:35:17.810-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T22:35:17.810-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-08T22:35:17.810-05:00 level=INFO msg="Export complete"
+time=2026-01-08T22:35:18.811-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-08T22:35:18.812-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-08T22:35:18.812-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-08T22:36:06.424-05:00 level=INFO msg="Mutation detected: %s %s" status=is-tree-b47
+time=2026-01-08T22:36:06.925-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-08T22:36:06.925-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-08T22:36:06.928-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-08T22:36:06.928-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-08T22:36:06.928-05:00 level=INFO msg="Export complete"
+time=2026-01-08T22:36:07.930-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-08T22:36:07.930-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-08T22:36:07.930-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T04:59:08.886-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-b47
+time=2026-01-09T04:59:09.387-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-09T04:59:09.387-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-09T04:59:09.390-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-09T04:59:09.390-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T04:59:09.390-05:00 level=INFO msg="File change detected: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T04:59:09.391-05:00 level=INFO msg="Export complete"
+time=2026-01-09T04:59:10.392-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T04:59:10.392-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T04:59:10.392-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T04:59:14.638-05:00 level=INFO msg="Mutation detected: %s %s" status=is-tree-b47
+time=2026-01-09T04:59:15.138-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-09T04:59:15.138-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-09T04:59:15.141-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T04:59:15.141-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-09T04:59:15.142-05:00 level=INFO msg="Export complete"
+time=2026-01-09T04:59:16.143-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T04:59:16.143-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T04:59:16.143-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T04:59:27.997-05:00 level=INFO msg="Mutation detected: %s %s" status=is-tree-e8o
+time=2026-01-09T04:59:28.497-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-09T04:59:28.497-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-09T04:59:28.500-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T04:59:28.500-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-09T04:59:28.500-05:00 level=INFO msg="Export complete"
+time=2026-01-09T04:59:29.501-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T04:59:29.501-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T04:59:29.501-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:04:52.056-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-e8o
+time=2026-01-09T05:04:52.557-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-09T05:04:52.557-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-09T05:04:52.562-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:04:52.562-05:00 level=INFO msg="File change detected: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:04:52.562-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-09T05:04:52.562-05:00 level=INFO msg="Export complete"
+time=2026-01-09T05:04:53.563-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:04:53.563-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:04:53.564-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:05:02.962-05:00 level=INFO msg="Mutation detected: %s %s" status=is-tree-e8o
+time=2026-01-09T05:05:03.463-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-09T05:05:03.463-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-09T05:05:03.466-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-09T05:05:03.466-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:05:03.466-05:00 level=INFO msg="File change detected: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:05:03.466-05:00 level=INFO msg="Export complete"
+time=2026-01-09T05:05:04.467-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:05:04.467-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:05:04.468-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:05:09.579-05:00 level=INFO msg="Mutation detected: %s %s" status=is-tree-bdv
+time=2026-01-09T05:05:10.079-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-09T05:05:10.079-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-09T05:05:10.082-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:05:10.082-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-09T05:05:10.082-05:00 level=INFO msg="Export complete"
+time=2026-01-09T05:05:11.083-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:05:11.083-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:05:11.083-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:06:15.443-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-bdv
+time=2026-01-09T05:06:15.944-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-09T05:06:15.944-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-09T05:06:15.947-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:06:15.947-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-09T05:06:15.947-05:00 level=INFO msg="Export complete"
+time=2026-01-09T05:06:16.948-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:06:16.948-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:06:16.948-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:06:18.095-05:00 level=INFO msg="Mutation detected: %s %s" status=is-tree-bdv
+time=2026-01-09T05:06:18.596-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-09T05:06:18.596-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-09T05:06:18.599-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:06:18.599-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-09T05:06:18.599-05:00 level=INFO msg="Export complete"
+time=2026-01-09T05:06:19.600-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:06:19.600-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:06:19.600-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:06:26.611-05:00 level=INFO msg="Mutation detected: %s %s" status=is-tree-wsl
+time=2026-01-09T05:06:27.111-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-09T05:06:27.112-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-09T05:06:27.114-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:06:27.114-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-09T05:06:27.114-05:00 level=INFO msg="Export complete"
+time=2026-01-09T05:06:28.115-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:06:28.115-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:06:28.116-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:07:23.220-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-wsl
+time=2026-01-09T05:07:23.720-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-09T05:07:23.720-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-09T05:07:23.723-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:07:23.723-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-09T05:07:23.723-05:00 level=INFO msg="Export complete"
+time=2026-01-09T05:07:24.724-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:07:24.725-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:07:24.725-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:07:32.874-05:00 level=INFO msg="Mutation detected: %s %s" status=is-tree-wsl
+time=2026-01-09T05:07:33.374-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-09T05:07:33.374-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-09T05:07:33.377-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:07:33.377-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-09T05:07:33.378-05:00 level=INFO msg="Export complete"
+time=2026-01-09T05:07:34.378-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:07:34.379-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:07:34.379-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:07:41.495-05:00 level=INFO msg="Mutation detected: %s %s" status=is-tree-070
+time=2026-01-09T05:07:41.995-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-09T05:07:41.995-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-09T05:07:42.005-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:07:42.005-05:00 level=INFO msg="File change detected: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:07:42.005-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-09T05:07:42.005-05:00 level=INFO msg="Export complete"
+time=2026-01-09T05:07:43.006-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:07:43.006-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:07:43.007-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:08:13.938-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-070
+time=2026-01-09T05:08:14.438-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-09T05:08:14.439-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-09T05:08:14.442-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:08:14.442-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-09T05:08:14.442-05:00 level=INFO msg="Export complete"
+time=2026-01-09T05:08:15.443-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:08:15.443-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:08:15.443-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:08:17.679-05:00 level=INFO msg="Mutation detected: %s %s" status=is-tree-070
+time=2026-01-09T05:08:18.180-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-09T05:08:18.180-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-09T05:08:18.183-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:08:18.183-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-09T05:08:18.183-05:00 level=INFO msg="Export complete"
+time=2026-01-09T05:08:19.184-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:08:19.184-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:08:19.184-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:08:26.641-05:00 level=INFO msg="Mutation detected: %s %s" status=is-tree-sro
+time=2026-01-09T05:08:27.142-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-09T05:08:27.142-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-09T05:08:27.144-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:08:27.144-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-09T05:08:27.145-05:00 level=INFO msg="Export complete"
+time=2026-01-09T05:08:28.146-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:08:28.146-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:08:28.146-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:12:00.845-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-sro
+time=2026-01-09T05:12:01.345-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-09T05:12:01.345-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-09T05:12:01.348-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:12:01.348-05:00 level=INFO msg="File change detected: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:12:01.348-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-09T05:12:01.348-05:00 level=INFO msg="Export complete"
+time=2026-01-09T05:12:02.350-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:12:02.350-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:12:02.350-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:12:03.257-05:00 level=INFO msg="Mutation detected: %s %s" status=is-tree-sro
+time=2026-01-09T05:12:03.758-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-09T05:12:03.758-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-09T05:12:03.762-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:12:03.762-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-09T05:12:03.762-05:00 level=INFO msg="Export complete"
+time=2026-01-09T05:12:04.763-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:12:04.763-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:12:04.763-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:12:07.700-05:00 level=INFO msg="Mutation detected: %s %s" status=is-tree-1hz
+time=2026-01-09T05:12:08.200-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-09T05:12:08.200-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-09T05:12:08.204-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:12:08.204-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-09T05:12:08.204-05:00 level=INFO msg="Export complete"
+time=2026-01-09T05:12:09.206-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:12:09.206-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:12:09.206-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:13:31.498-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-1hz
+time=2026-01-09T05:13:31.998-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-09T05:13:31.998-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-09T05:13:32.001-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:13:32.001-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-09T05:13:32.001-05:00 level=INFO msg="Export complete"
+time=2026-01-09T05:13:33.002-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:13:33.002-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:13:33.002-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:13:34.201-05:00 level=INFO msg="Mutation detected: %s %s" status=is-tree-1hz
+time=2026-01-09T05:13:34.702-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-09T05:13:34.702-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-09T05:13:34.705-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:13:34.705-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-09T05:13:34.705-05:00 level=INFO msg="Export complete"
+time=2026-01-09T05:13:35.706-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:13:35.707-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:13:35.707-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:13:39.021-05:00 level=INFO msg="Mutation detected: %s %s" status=is-tree-00n
+time=2026-01-09T05:13:39.521-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-09T05:13:39.521-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-09T05:13:39.524-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:13:39.524-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-09T05:13:39.524-05:00 level=INFO msg="Export complete"
+time=2026-01-09T05:13:40.525-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:13:40.525-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:13:40.526-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:17:08.458-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-00n
+time=2026-01-09T05:17:08.958-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-09T05:17:08.958-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-09T05:17:08.961-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:17:08.961-05:00 level=INFO msg="File change detected: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:17:08.961-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-09T05:17:08.961-05:00 level=INFO msg="Export complete"
+time=2026-01-09T05:17:09.963-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:17:09.963-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:17:09.963-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:17:17.041-05:00 level=INFO msg="Mutation detected: %s %s" status=is-tree-00n
+time=2026-01-09T05:17:17.541-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-09T05:17:17.541-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-09T05:17:17.544-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:17:17.544-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-09T05:17:17.545-05:00 level=INFO msg="Export complete"
+time=2026-01-09T05:17:18.546-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:17:18.546-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:17:18.546-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:17:23.881-05:00 level=INFO msg="Mutation detected: %s %s" status=is-tree-vv0
+time=2026-01-09T05:17:24.381-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-09T05:17:24.381-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-09T05:17:24.385-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:17:24.385-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-09T05:17:24.385-05:00 level=INFO msg="Export complete"
+time=2026-01-09T05:17:25.386-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:17:25.386-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:17:25.386-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:19:15.076-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-vv0
+time=2026-01-09T05:19:15.577-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-09T05:19:15.577-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-09T05:19:15.581-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-09T05:19:15.581-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:19:15.581-05:00 level=INFO msg="File change detected: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:19:15.581-05:00 level=INFO msg="Export complete"
+time=2026-01-09T05:19:16.582-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:19:16.582-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:19:16.582-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:19:17.371-05:00 level=INFO msg="Mutation detected: %s %s" status=is-tree-vv0
+time=2026-01-09T05:19:17.871-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-09T05:19:17.871-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-09T05:19:17.874-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:19:17.874-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-09T05:19:17.875-05:00 level=INFO msg="Export complete"
+time=2026-01-09T05:19:18.876-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:19:18.876-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:19:18.876-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:20:39.292-05:00 level=INFO msg="Mutation detected: %s %s" status=is-tree-xxv
+time=2026-01-09T05:20:39.793-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-09T05:20:39.793-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-09T05:20:39.796-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:20:39.796-05:00 level=INFO msg="File change detected: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:20:39.796-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-09T05:20:39.796-05:00 level=INFO msg="Export complete"
+time=2026-01-09T05:20:40.797-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:20:40.797-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:20:40.797-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:21:04.706-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:21:04.706-05:00 level=INFO msg="File change detected: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:21:05.707-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:21:05.707-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:21:05.708-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:21:14.028-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:21:14.028-05:00 level=INFO msg="File change detected: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:21:15.030-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:21:15.030-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:21:15.031-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:33:49.752-05:00 level=INFO msg="Git ref change detected: %s" !BADKEY=/home/rektide/src/is-tree/.git/refs/heads/main.lock
+time=2026-01-09T05:33:50.753-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:33:50.754-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:33:50.754-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:38:06.513-05:00 level=INFO msg="Mutation detected: %s %s" create=is-tree-3ub
+time=2026-01-09T05:38:07.014-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-09T05:38:07.014-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-09T05:38:07.017-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:38:07.017-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-09T05:38:07.017-05:00 level=INFO msg="Export complete"
+time=2026-01-09T05:38:08.018-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:38:08.018-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:38:08.018-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:38:19.462-05:00 level=INFO msg="Mutation detected: %s %s" status=is-tree-3ub
+time=2026-01-09T05:38:19.962-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-09T05:38:19.962-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-09T05:38:19.966-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:38:19.966-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-09T05:38:19.966-05:00 level=INFO msg="Export complete"
+time=2026-01-09T05:38:20.968-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:38:20.968-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:38:20.968-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:39:47.593-05:00 level=INFO msg="Mutation detected: %s %s" update=is-tree-3ub
+time=2026-01-09T05:39:48.094-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-09T05:39:48.094-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-09T05:39:48.097-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:39:48.097-05:00 level=INFO msg="File change detected: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:39:48.097-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-09T05:39:48.097-05:00 level=INFO msg="Export complete"
+time=2026-01-09T05:39:49.098-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:39:49.098-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:39:49.099-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:40:02.464-05:00 level=INFO msg="Mutation detected: %s %s" status=is-tree-3ub
+time=2026-01-09T05:40:02.965-05:00 level=INFO msg="Export triggered by mutation events"
+time=2026-01-09T05:40:02.965-05:00 level=INFO msg="Starting %s..." !BADKEY=export
+time=2026-01-09T05:40:02.968-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:40:02.968-05:00 level=INFO msg="Exported to JSONL"
+time=2026-01-09T05:40:02.968-05:00 level=INFO msg="Export complete"
+time=2026-01-09T05:40:03.969-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:40:03.969-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:40:03.969-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:40:25.864-05:00 level=INFO msg="JSONL file created: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:40:25.864-05:00 level=INFO msg="File change detected: %s" !BADKEY=/home/rektide/src/is-tree/.beads/issues.jsonl
+time=2026-01-09T05:40:26.866-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:40:26.866-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:40:26.867-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-09T05:43:27.886-05:00 level=INFO msg="Git ref change detected: %s" !BADKEY=/home/rektide/src/is-tree/.git/refs/heads/main.lock
+time=2026-01-09T05:43:28.887-05:00 level=INFO msg="Import triggered by file change"
+time=2026-01-09T05:43:28.887-05:00 level=INFO msg="Starting %s..." !BADKEY=auto-import
+time=2026-01-09T05:43:28.887-05:00 level=INFO msg="Skipping %s: JSONL content unchanged" !BADKEY=auto-import
+time=2026-01-15T20:16:55.697-05:00 level=INFO msg="Received signal %v, shutting down..." !BADKEY=terminated
