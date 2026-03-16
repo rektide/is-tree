@@ -27,7 +27,7 @@ Current wiring is centralized in [`/src/main.rs`](/src/main.rs), with detector h
 ## Core Types
 
 ```rust
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::pin::Pin;
 
@@ -56,8 +56,7 @@ pub struct RepoWorkItem {
     pub repo: RepoInfo,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct ColumnId(pub &'static str);
+pub type ColumnIx = usize;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CellValue {
@@ -67,8 +66,8 @@ pub enum CellValue {
 }
 
 #[derive(Debug, Clone)]
-pub struct ColumnSpec {
-    pub id: ColumnId,
+pub struct ColumnDecl {
+    pub key: &'static str,
     pub title: &'static str,
     pub description: &'static str,
     pub sortable: bool,
@@ -76,16 +75,34 @@ pub struct ColumnSpec {
 }
 
 #[derive(Debug, Clone)]
+pub struct ColumnSpec {
+    pub ix: ColumnIx,
+    pub key: &'static str,
+    pub owner_plugin_ix: usize,
+    pub title: &'static str,
+    pub description: &'static str,
+    pub sortable: bool,
+    pub default_in_base_format: bool,
+}
+
+#[derive(Debug, Clone)]
+pub struct ColumnCatalog {
+    pub columns: Vec<ColumnSpec>,
+    pub by_key: HashMap<&'static str, ColumnIx>,
+    pub by_plugin: Vec<Vec<ColumnIx>>, // plugin_ix -> owned columns
+}
+
+#[derive(Debug, Clone)]
 pub struct OutputRow {
     pub row_id: RowId,
     pub path: PathBuf,
-    pub cells: BTreeMap<ColumnId, CellValue>,
+    pub cells: Vec<CellValue>, // indexed by ColumnIx
 }
 
 #[derive(Debug, Clone)]
 pub struct RowPatch {
     pub row_id: RowId,
-    pub cells: BTreeMap<ColumnId, CellValue>,
+    pub updates: Vec<(ColumnIx, CellValue)>,
 }
 
 pub type MicroBatch = Vec<RowPatch>;
@@ -101,14 +118,14 @@ pub struct ArgSpec {
 #[derive(Debug, Clone)]
 pub struct PluginConfig {
     pub enabled: bool,
-    pub options: BTreeMap<String, String>,
+    pub options: HashMap<String, String>,
 }
 
 #[derive(Debug, Clone)]
 pub struct CollectRequest<'a> {
     pub items: &'a [RepoWorkItem],
     pub cfg: &'a PluginConfig,
-    pub requested_columns: &'a BTreeSet<ColumnId>,
+    pub requested_columns: &'a [ColumnIx], // subset owned by this plugin
     pub microbatch_rows: usize,
 }
 ```
@@ -124,7 +141,7 @@ pub trait RepoProbe: Send + Sync {
 pub trait DetectorPlugin: Send + Sync {
     fn id(&self) -> &'static str; // unique, stable, cli-safe: "jj"
     fn description(&self) -> &'static str;
-    fn columns(&self) -> &'static [ColumnSpec];
+    fn column_decls(&self) -> &'static [ColumnDecl];
 
     // plugin-owned arguments to inject into clap::Command
     fn args(&self) -> Vec<ArgSpec> {
@@ -135,7 +152,7 @@ pub trait DetectorPlugin: Send + Sync {
     fn configure(&self, _matches: &ArgMatches) -> PluginConfig {
         PluginConfig {
             enabled: true,
-            options: BTreeMap::new(),
+            options: HashMap::new(),
         }
     }
 
@@ -157,9 +174,8 @@ pub struct PluginRegistry {
     plugins: Vec<Box<dyn DetectorPlugin>>,
 
     // indexes built at startup
-    by_id: BTreeMap<&'static str, usize>,
-    column_owner: BTreeMap<ColumnId, &'static str>,
-    all_columns: Vec<ColumnSpec>,
+    plugin_by_id: HashMap<&'static str, usize>,
+    columns: ColumnCatalog,
 }
 
 impl PluginRegistry {
@@ -174,13 +190,14 @@ impl PluginRegistry {
     }
 
     pub fn configure_all(&self, matches: &ArgMatches)
-        -> BTreeMap<&'static str, PluginConfig>
+        -> Vec<PluginConfig>
     {
-        BTreeMap::new()
+        // index-aligned with plugins
+        Vec::new()
     }
 
-    pub fn columns(&self) -> &[ColumnSpec] {
-        &self.all_columns
+    pub fn columns(&self) -> &ColumnCatalog {
+        &self.columns
     }
 
     pub fn probe_items(&self, paths: &[PathBuf]) -> Vec<RepoWorkItem> {
@@ -191,12 +208,13 @@ impl PluginRegistry {
     pub async fn run_plugins_streaming(
         &self,
         items: &[RepoWorkItem],
-        selected_plugins: &BTreeSet<&'static str>,
-        configs: &BTreeMap<&'static str, PluginConfig>,
-        requested_columns: &BTreeSet<ColumnId>,
+        selected_plugins: &[usize], // plugin indexes
+        configs: &[PluginConfig],
+        requested_column_mask: &[bool], // indexed by ColumnIx
         rows: &mut [OutputRow],
     ) -> anyhow::Result<()> {
         // 1) start selected plugin streams concurrently
+        // 2) derive plugin-local requested columns as Vec<ColumnIx>
         // 2) consume microbatches
         // 3) merge patches into rows by row_id
         // 4) enforce column ownership
@@ -208,11 +226,23 @@ impl PluginRegistry {
 ## Registry Invariants
 
 - Plugin IDs are unique.
-- Column IDs are unique across all plugins.
-- Each column has exactly one owner plugin.
+- Column keys are unique across all plugins.
+- Each column index has exactly one owner plugin index.
 - CLI argument IDs/long names are unique after plugin injection.
 - Registration order is stable and used for deterministic tie-breaking.
-- Patch merge must reject unknown row IDs and non-owner column writes.
+- Patch merge must reject unknown row IDs and non-owner column index writes.
+- `OutputRow.cells.len()` always equals `columns.columns.len()`.
+
+## Column Catalog Model
+
+- Each plugin returns a static list via `column_decls()`.
+- Registry assigns contiguous `ColumnIx` values at registration time.
+- Registry builds:
+  - `by_key` dictionary for parsing `--format` placeholders,
+  - `by_plugin` lists for fast plugin-local requested column resolution.
+- Runtime passes plugins a list of requested column indexes they own.
+
+This removes per-row map lookups and keeps output storage compact (`Vec<CellValue>`).
 
 ## Built-in Registry Shape
 
@@ -280,18 +310,18 @@ let items = registry.probe_items(&paths);
 let mut rows: Vec<OutputRow> = items.iter().map(|item| OutputRow {
     row_id: item.row_id,
     path: item.path.clone(),
-    cells: BTreeMap::new(),
+    cells: vec![CellValue::Empty; registry.columns().columns.len()],
 }).collect();
 
 // 6) Compute requested columns (from --format/default/sort deps)
-let requested_columns = resolve_requested_columns(&matches, registry.columns());
+let requested_column_mask = resolve_requested_columns(&matches, registry.columns());
 
 // 7) Run plugins concurrently and merge streamed microbatches
 registry.run_plugins_streaming(
     &items,
-    &selected_plugins,
+    &selected_plugin_indexes,
     &configs,
-    &requested_columns,
+    &requested_column_mask,
     &mut rows,
 ).await?;
 
