@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::pin::Pin;
 
-use clap::{Arg, ArgMatches, Command};
+use clap::{Arg, ArgAction, ArgMatches, Command};
 use futures_core::Stream;
 use futures_util::StreamExt;
 
@@ -11,6 +11,7 @@ use crate::detect::{detect_repo, RepoInfo};
 pub type RowId = usize;
 pub type PluginIx = usize;
 pub type ColumnIx = usize;
+pub type ArgId = usize;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RepoWorkItem {
@@ -102,10 +103,6 @@ impl ColumnCatalog {
     pub fn len(&self) -> usize {
         self.columns.len()
     }
-
-    pub fn is_empty(&self) -> bool {
-        self.columns.is_empty()
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -136,10 +133,172 @@ pub type PluginError = String;
 pub type PluginResult<T> = Result<T, PluginError>;
 pub type BatchStream<'a> = Pin<Box<dyn Stream<Item = PluginResult<MicroBatch>> + Send + 'a>>;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ArgKind {
+    PluginToggle {
+        help: &'static str,
+    },
+    ColumnToggle {
+        local_col_ix: usize,
+        help: &'static str,
+    },
+    Flag {
+        suffix: &'static str,
+        help: &'static str,
+        default: bool,
+    },
+    String {
+        suffix: &'static str,
+        help: &'static str,
+        value_name: &'static str,
+        default: Option<&'static str>,
+    },
+    StringList {
+        suffix: &'static str,
+        help: &'static str,
+        value_name: &'static str,
+    },
+    Count {
+        suffix: &'static str,
+        help: &'static str,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ArgValue {
+    Bool(bool),
+    String(Option<String>),
+    Strings(Vec<String>),
+    Count(u8),
+}
+
 #[derive(Debug, Clone)]
-pub struct ArgSpec {
-    pub plugin_id: &'static str,
-    pub arg: Arg,
+struct ArgEntry {
+    plugin_ix: PluginIx,
+    local_arg_ix: usize,
+    kind: ArgKind,
+    clap_id: String,
+    long: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct ArgCatalog {
+    entries: Vec<ArgEntry>,
+    by_plugin: Vec<Vec<ArgId>>,
+    by_long: HashMap<String, ArgId>,
+}
+
+impl ArgCatalog {
+    fn new() -> Self {
+        Self {
+            entries: Vec::new(),
+            by_plugin: Vec::new(),
+            by_long: HashMap::new(),
+        }
+    }
+
+    fn register_plugin_slot(&mut self) {
+        self.by_plugin.push(Vec::new());
+    }
+
+    fn push_arg(
+        &mut self,
+        plugin_ix: PluginIx,
+        local_arg_ix: usize,
+        kind: ArgKind,
+        long: String,
+    ) {
+        if self.by_long.contains_key(&long) {
+            panic!("duplicate arg long name '--{}'", long);
+        }
+
+        let arg_id = self.entries.len();
+        let clap_id = format!("p{plugin_ix}a{local_arg_ix}");
+        self.entries.push(ArgEntry {
+            plugin_ix,
+            local_arg_ix,
+            kind,
+            clap_id,
+            long: long.clone(),
+        });
+        self.by_plugin
+            .get_mut(plugin_ix)
+            .expect("plugin slot exists")
+            .push(arg_id);
+        self.by_long.insert(long, arg_id);
+    }
+
+    fn plugin_args(&self, plugin_ix: PluginIx) -> &[ArgId] {
+        self.by_plugin
+            .get(plugin_ix)
+            .map(Vec::as_slice)
+            .unwrap_or(&[])
+    }
+
+    fn parse_store(&self, matches: &ArgMatches) -> ArgStore {
+        let mut values = Vec::with_capacity(self.entries.len());
+        for entry in &self.entries {
+            let value = parse_arg_value(matches, entry);
+            values.push(value);
+        }
+
+        ArgStore { values }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct ArgStore {
+    values: Vec<ArgValue>,
+}
+
+impl ArgStore {
+    fn value(&self, arg_id: ArgId) -> Option<&ArgValue> {
+        self.values.get(arg_id)
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct PluginArgs<'a> {
+    arg_ids: &'a [ArgId],
+    store: &'a ArgStore,
+}
+
+impl<'a> PluginArgs<'a> {
+    pub fn bool(&self, local_arg_ix: usize) -> Option<bool> {
+        let arg_id = *self.arg_ids.get(local_arg_ix)?;
+        let value = self.store.value(arg_id)?;
+        match value {
+            ArgValue::Bool(v) => Some(*v),
+            _ => None,
+        }
+    }
+
+    pub fn string(&self, local_arg_ix: usize) -> Option<&str> {
+        let arg_id = *self.arg_ids.get(local_arg_ix)?;
+        let value = self.store.value(arg_id)?;
+        match value {
+            ArgValue::String(v) => v.as_deref(),
+            _ => None,
+        }
+    }
+
+    pub fn strings(&self, local_arg_ix: usize) -> Option<&[String]> {
+        let arg_id = *self.arg_ids.get(local_arg_ix)?;
+        let value = self.store.value(arg_id)?;
+        match value {
+            ArgValue::Strings(v) => Some(v),
+            _ => None,
+        }
+    }
+
+    pub fn count(&self, local_arg_ix: usize) -> Option<u8> {
+        let arg_id = *self.arg_ids.get(local_arg_ix)?;
+        let value = self.store.value(arg_id)?;
+        match value {
+            ArgValue::Count(v) => Some(*v),
+            _ => None,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -188,11 +347,11 @@ pub trait DetectorPlugin: Send + Sync {
     fn description(&self) -> &'static str;
     fn column_decls(&self) -> &'static [ColumnDecl];
 
-    fn args(&self) -> Vec<ArgSpec> {
-        Vec::new()
+    fn arg_kinds(&self) -> &'static [ArgKind] {
+        &[]
     }
 
-    fn configure(&self, _matches: &ArgMatches) -> PluginConfig {
+    fn configure(&self, _args: PluginArgs<'_>) -> PluginConfig {
         PluginConfig::enabled()
     }
 
@@ -220,6 +379,7 @@ pub struct PluginRegistry {
     plugins: Vec<Box<dyn DetectorPlugin>>,
     plugin_by_id: HashMap<&'static str, PluginIx>,
     columns: ColumnCatalog,
+    args: ArgCatalog,
 }
 
 impl PluginRegistry {
@@ -229,6 +389,7 @@ impl PluginRegistry {
             plugins: Vec::new(),
             plugin_by_id: HashMap::new(),
             columns: ColumnCatalog::new(),
+            args: ArgCatalog::new(),
         }
     }
 
@@ -240,8 +401,16 @@ impl PluginRegistry {
 
         let plugin_ix = self.plugins.len();
         self.columns.register_plugin_slot();
-        for decl in plugin.column_decls() {
+        self.args.register_plugin_slot();
+
+        let decls = plugin.column_decls();
+        for decl in decls {
             self.columns.push_column(plugin_ix, *decl);
+        }
+
+        for (local_arg_ix, kind) in plugin.arg_kinds().iter().copied().enumerate() {
+            let long = make_arg_long(plugin_id, kind, decls);
+            self.args.push_arg(plugin_ix, local_arg_ix, kind, long);
         }
 
         self.plugin_by_id.insert(plugin_id, plugin_ix);
@@ -250,43 +419,26 @@ impl PluginRegistry {
 
     pub fn build_command(&self, mut cmd: Command) -> Command {
         let mut arg_ids = HashSet::new();
-        let mut arg_longs = HashSet::new();
-
-        for plugin in &self.plugins {
-            for spec in plugin.args() {
-                if spec.plugin_id != plugin.id() {
-                    panic!(
-                        "plugin '{}' returned arg owned by '{}'",
-                        plugin.id(),
-                        spec.plugin_id
-                    );
-                }
-
-                let arg_id = spec.arg.get_id().to_string();
-                if !arg_ids.insert(arg_id.clone()) {
-                    panic!("duplicate clap arg id '{arg_id}' from plugin '{}'", plugin.id());
-                }
-
-                if let Some(long) = spec.arg.get_long() {
-                    if !arg_longs.insert(long.to_string()) {
-                        panic!(
-                            "duplicate clap --long name '{long}' from plugin '{}'",
-                            plugin.id()
-                        );
-                    }
-                }
-
-                cmd = cmd.arg(spec.arg);
+        for entry in &self.args.entries {
+            if !arg_ids.insert(entry.clap_id.clone()) {
+                panic!("duplicate clap arg id '{}'", entry.clap_id);
             }
+
+            cmd = cmd.arg(build_clap_arg(entry));
         }
 
         cmd
     }
 
     pub fn configure_all(&self, matches: &ArgMatches) -> Vec<PluginConfig> {
+        let store = self.args.parse_store(matches);
         let mut configs = Vec::with_capacity(self.plugins.len());
-        for plugin in &self.plugins {
-            configs.push(plugin.configure(matches));
+        for (plugin_ix, plugin) in self.plugins.iter().enumerate() {
+            let args = PluginArgs {
+                arg_ids: self.args.plugin_args(plugin_ix),
+                store: &store,
+            };
+            configs.push(plugin.configure(args));
         }
         configs
     }
@@ -334,6 +486,21 @@ impl PluginRegistry {
         Ok(mask)
     }
 
+    pub fn resolve_plugin_indexes(&self, ids: &[String]) -> PluginResult<Vec<PluginIx>> {
+        if ids.is_empty() {
+            return Ok((0..self.plugins.len()).collect());
+        }
+
+        let mut resolved = Vec::with_capacity(ids.len());
+        for id in ids {
+            let ix = self
+                .plugin_ix(id)
+                .ok_or_else(|| format!("unknown plugin id: {id}"))?;
+            resolved.push(ix);
+        }
+        Ok(resolved)
+    }
+
     pub async fn run_plugins_streaming(
         &self,
         items: &[RepoWorkItem],
@@ -356,7 +523,8 @@ impl PluginRegistry {
                 continue;
             }
 
-            let requested_columns = self.requested_columns_for_plugin(plugin_ix, requested_column_mask);
+            let requested_columns =
+                self.requested_columns_for_plugin(plugin_ix, requested_column_mask);
             if requested_columns.is_empty() {
                 continue;
             }
@@ -447,6 +615,99 @@ impl PluginRegistry {
         }
 
         Ok(())
+    }
+}
+
+fn make_arg_long(plugin_id: &str, kind: ArgKind, decls: &[ColumnDecl]) -> String {
+    match kind {
+        ArgKind::PluginToggle { .. } => plugin_id.to_string(),
+        ArgKind::ColumnToggle { local_col_ix, .. } => {
+            let decl = decls
+                .get(local_col_ix)
+                .unwrap_or_else(|| {
+                    panic!(
+                        "invalid local_col_ix {} for plugin '{}'",
+                        local_col_ix, plugin_id
+                    )
+                });
+            format!("{plugin_id}-{}", decl.key)
+        }
+        ArgKind::Flag { suffix, .. }
+        | ArgKind::String { suffix, .. }
+        | ArgKind::StringList { suffix, .. }
+        | ArgKind::Count { suffix, .. } => format!("{plugin_id}-{suffix}"),
+    }
+}
+
+fn build_clap_arg(entry: &ArgEntry) -> Arg {
+    let id: &'static str = Box::leak(entry.clap_id.clone().into_boxed_str());
+    let long: &'static str = Box::leak(entry.long.clone().into_boxed_str());
+
+    match entry.kind {
+        ArgKind::PluginToggle { help } | ArgKind::ColumnToggle { help, .. } => {
+            Arg::new(id)
+                .long(long)
+                .help(help)
+                .action(ArgAction::SetTrue)
+        }
+        ArgKind::Flag { help, .. } => Arg::new(id)
+            .long(long)
+            .help(help)
+            .action(ArgAction::SetTrue),
+        ArgKind::String {
+            help,
+            value_name,
+            default,
+            ..
+        } => {
+            let mut arg = Arg::new(id)
+                .long(long)
+                .help(help)
+                .value_name(value_name)
+                .action(ArgAction::Set);
+            if let Some(default_value) = default {
+                arg = arg.default_value(default_value);
+            }
+            arg
+        }
+        ArgKind::StringList {
+            help, value_name, ..
+        } => Arg::new(id)
+            .long(long)
+            .help(help)
+            .value_name(value_name)
+            .action(ArgAction::Append),
+        ArgKind::Count { help, .. } => Arg::new(id)
+            .long(long)
+            .help(help)
+            .action(ArgAction::Count),
+    }
+}
+
+fn parse_arg_value(matches: &ArgMatches, entry: &ArgEntry) -> ArgValue {
+    match entry.kind {
+        ArgKind::PluginToggle { .. } | ArgKind::ColumnToggle { .. } => {
+            ArgValue::Bool(matches.get_flag(&entry.clap_id))
+        }
+        ArgKind::Flag { default, .. } => {
+            let value = matches.get_flag(&entry.clap_id);
+            ArgValue::Bool(value || default)
+        }
+        ArgKind::String { default, .. } => {
+            let value = matches
+                .get_one::<String>(&entry.clap_id)
+                .cloned()
+                .or_else(|| default.map(str::to_string));
+            ArgValue::String(value)
+        }
+        ArgKind::StringList { .. } => {
+            let values = matches
+                .get_many::<String>(&entry.clap_id)
+                .map(|it| it.cloned().collect())
+                .unwrap_or_else(Vec::new);
+            ArgValue::Strings(values)
+        }
+        ArgKind::Count { .. } => ArgValue::Count(matches.get_count(&entry.clap_id)),
     }
 }
 
