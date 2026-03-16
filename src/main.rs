@@ -87,6 +87,15 @@ struct Cli {
     #[arg(long)]
     beads: bool,
 
+    #[arg(long)]
+    commit_date: bool,
+
+    #[arg(long)]
+    change_date: bool,
+
+    #[arg(long)]
+    dates: bool,
+
     #[arg(name = "DIRECTORIES")]
     directories: Vec<PathBuf>,
 }
@@ -202,6 +211,18 @@ fn build_format_string(args: &Cli) -> Option<String> {
     }
 
     let mut columns = vec!["{status}", "{directory}"];
+
+    if args.dates {
+        columns.push("{commit-date}");
+        columns.push("{change-date}");
+    } else {
+        if args.commit_date {
+            columns.push("{commit-date}");
+        }
+        if args.change_date {
+            columns.push("{change-date}");
+        }
+    }
 
     if args.jj {
         columns.push("{ahead}");
