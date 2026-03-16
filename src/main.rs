@@ -5,6 +5,8 @@ use clap::Parser;
 use serde::Serialize;
 
 mod detect;
+#[allow(dead_code)]
+mod plugin;
 
 use detect::{
     detect_repo, get_ahead, get_beads_prefix, get_change_date, get_commit_date, get_variant,
