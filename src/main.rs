@@ -51,6 +51,12 @@ DETAILED OPTIONS:
         --format '{directory} - {status} ({workparent})'
         --format '{directory} ({variant})'
         --format all
+
+  --commit-date, --change-date, --dates
+      Add date columns to default output.
+      --commit-date adds last commit date.
+      --change-date adds last file change date.
+      --dates adds both.
 "
 )]
 struct Cli {
