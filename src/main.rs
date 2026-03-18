@@ -1,258 +1,220 @@
+use std::collections::HashSet;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use clap::Parser;
-use serde::Serialize;
+use clap::{value_parser, Arg, ArgMatches, Command};
+use serde_json::Value;
 
 mod detect;
-#[allow(dead_code)]
 mod plugin;
 
-use detect::{
-    detect_repo, get_ahead, get_beads_prefix, get_change_date, get_commit_date, get_variant,
-    get_workparent, RepoType,
-};
+use plugin::{default_registry, CellValue, ColumnCatalog, OutputRow, PluginResult};
 
-#[derive(Parser)]
-#[command(
-    name = "is-tree",
-    after_long_help = "
-DETAILED OPTIONS:
-
-  --filter <TYPES>
-      Filter results by repository types. Multiple types can be comma-separated.
-      Use - suffix for NOT (exclude matching types).
-      
-      Types: git, jj, worktree, worktree-git, worktree-jj
-      
-      Examples:
-        --filter git              Show only Git repositories
-        --filter git,jj           Show Git and Jujutsu repos
-        --filter worktree-         Show non-worktree repos
-        --filter git,jj,worktree- Show Git and JJ but exclude worktrees
-
-  --sort <COLUMNS>
-      Sort results by column(s). Multiple columns can be comma-separated.
-      Use + suffix for ascending (default), - for descending.
-      
-      Columns: status, directory, commit-date, change-date, workparent, variant, ahead, beads
-      
-      Examples:
-        --sort status+              Sort by status ascending
-        --sort change-date-          Sort by most recent change first
-        --sort status-,directory+    Sort by status descending, then directory
-
-  --format <STRING>
-      Custom output format using {column} placeholders.
-      Use --format all as a shortcut for all columns.
-      
-      Columns: status, directory, commit-date, change-date, workparent, variant, ahead, beads
-      
-      Examples:
-        --format '{status} {directory}'
-        --format '{directory} - {status} ({workparent})'
-        --format '{directory} ({variant})'
-        --format all
-
-  --commit-date, --change-date, --dates
-      Add date columns to default output.
-      --commit-date adds last commit date.
-      --change-date adds last file change date.
-      --dates adds both.
-"
-)]
-struct Cli {
-    #[arg(short, long)]
-    all: bool,
-
-    #[arg(long)]
-    filter: Option<String>,
-
-    #[arg(long)]
-    sort: Option<String>,
-
-    #[arg(long)]
-    format: Option<String>,
-
-    #[arg(long)]
-    date: Option<String>,
-
-    #[arg(long)]
-    json: bool,
-
-    #[arg(long)]
-    header: bool,
-
-    #[arg(long, default_value = " ")]
-    separator: String,
-
-    #[arg(long)]
-    jj: bool,
-
-    #[arg(long)]
-    git: bool,
-
-    #[arg(long)]
-    beads: bool,
-
-    #[arg(long)]
-    commit_date: bool,
-
-    #[arg(long)]
-    change_date: bool,
-
-    #[arg(long)]
-    dates: bool,
-
-    #[arg(name = "DIRECTORIES")]
-    directories: Vec<PathBuf>,
-}
-
-#[derive(Debug, Clone, Serialize)]
-struct Result {
-    status: String,
-    directory: String,
-    commit_date: Option<String>,
-    change_date: Option<String>,
-    workparent: Option<String>,
-    variant: Option<String>,
-    ahead: Option<isize>,
-    beads: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize)]
-struct JsonResult {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    status: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    directory: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    commit_date: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    change_date: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    workparent: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    variant: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    ahead: Option<isize>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    beads: Option<String>,
-}
-
-fn main() {
-    let cli = Cli::parse();
-    run_list(cli);
-}
-
-fn run_list(args: Cli) {
-    let filters = parse_filters(args.filter.as_deref());
-    let sort_specs = parse_sort_specs(args.sort.as_deref());
-    let format_str = build_format_string(&args);
-
-    let paths = if args.all {
-        let current_dir = Path::new(".");
-        get_subdirectories(current_dir)
-            .into_iter()
-            .map(|p| current_dir.join(p))
-            .collect()
-    } else if args.directories.is_empty() {
-        eprintln!("Usage: is-tree <directory> [directories...] | --all");
+#[tokio::main]
+async fn main() {
+    if let Err(err) = run().await {
+        eprintln!("{err}");
         std::process::exit(1);
-    } else {
-        args.directories
-    };
-
-    let mut results: Vec<Result> = Vec::new();
-
-    for path in paths {
-        let info = detect_repo(&path);
-        let status = get_status_string(&info);
-        let commit_date = get_commit_date(&path, &info);
-        let change_date = get_change_date(&path);
-        let workparent = get_workparent(&path, &info);
-        let variant = get_variant(&path, &info);
-        let ahead = get_ahead(&path, &info);
-        let beads = get_beads_prefix(&path);
-
-        if matches_filters(&filters, &info, status) {
-            results.push(Result {
-                status: status.to_string(),
-                directory: path.display().to_string(),
-                commit_date,
-                change_date,
-                workparent,
-                variant,
-                ahead,
-                beads,
-            });
-        }
-    }
-
-    sort_results(&mut results, &sort_specs);
-
-    let format_str = format_str.as_deref().unwrap_or("{status} {directory}");
-
-    if args.json {
-        let columns = parse_columns_from_format(format_str);
-        let json_results: Vec<JsonResult> = results
-            .iter()
-            .map(|r| filter_json_result(r, &columns))
-            .collect();
-        let json_output = serde_json::to_string_pretty(&json_results).unwrap();
-        println!("{}", json_output);
-    } else {
-        let sep = &args.separator;
-        if args.header {
-            println!("{}", format_header(format_str, sep));
-        }
-        for result in results {
-            let formatted = format_result(&result, format_str, sep);
-            println!("{}", formatted);
-        }
     }
 }
 
-fn build_format_string(args: &Cli) -> Option<String> {
-    if let Some(fmt) = &args.format {
-        return Some(resolve_format_shortcuts(fmt).to_string());
-    }
+async fn run() -> PluginResult<()> {
+    let registry = default_registry();
+    let command = registry.build_command(base_command());
+    let matches = command.get_matches();
 
-    let mut columns = vec!["{status}", "{directory}"];
+    let paths = resolve_paths(&matches)?;
+    let explicit_format = matches.get_one::<String>("format").map(String::as_str);
+    let mut requested_mask =
+        resolve_requested_mask(explicit_format, registry.columns(), &registry)?;
+    registry.augment_requested_column_mask_from_args(&matches, &mut requested_mask)?;
 
-    if args.dates {
-        columns.push("{commit-date}");
-        columns.push("{change-date}");
+    let format_template = resolve_format_template(explicit_format, registry.columns(), &requested_mask)?;
+
+    let selected_plugin_ids = parse_csv(matches.get_one::<String>("plugins"));
+    let selected_plugin_indexes = registry.resolve_plugin_indexes(&selected_plugin_ids)?;
+    let configs = registry.configure_all(&matches);
+    let items = registry.probe_items(&paths);
+    let mut rows = registry.init_rows(&items);
+    let microbatch_rows = matches
+        .get_one::<usize>("microbatch-rows")
+        .copied()
+        .unwrap_or(64);
+
+    registry
+        .run_plugins_streaming(
+            &items,
+            &selected_plugin_indexes,
+            &configs,
+            &requested_mask,
+            &mut rows,
+            microbatch_rows,
+        )
+        .await?;
+
+    if matches.get_flag("json") {
+        render_json(&rows, &format_template, registry.columns())?;
     } else {
-        if args.commit_date {
-            columns.push("{commit-date}");
+        let separator = matches
+            .get_one::<String>("separator")
+            .map(String::as_str)
+            .unwrap_or(" ");
+
+        if matches.get_flag("header") {
+            println!("{}", format_header(&format_template, separator, registry.columns()));
         }
-        if args.change_date {
-            columns.push("{change-date}");
+
+        for row in &rows {
+            println!("{}", format_row(row, &format_template, separator, registry.columns()));
         }
     }
 
-    if args.jj {
-        columns.push("{ahead}");
-    }
-
-    if args.git {
-        // Git-specific columns would go here when implemented
-    }
-
-    if args.beads {
-        columns.push("{beads}");
-    }
-
-    Some(columns.join(" "))
+    Ok(())
 }
 
-fn resolve_format_shortcuts(format: &str) -> &str {
-    if format == "all" {
-        "{status} {directory} {commit-date} {change-date} {workparent} {variant} {ahead} {beads}"
-    } else {
-        format
+fn base_command() -> Command {
+    Command::new("is-tree")
+        .about("Indexed plugin-based repository detector")
+        .arg(
+            Arg::new("all")
+                .short('a')
+                .long("all")
+                .help("Scan all non-hidden subdirectories in current directory")
+                .action(clap::ArgAction::SetTrue),
+        )
+        .arg(
+            Arg::new("format")
+                .long("format")
+                .value_name("FORMAT")
+                .help("Output format template with {column} placeholders; use 'all' for all columns"),
+        )
+        .arg(
+            Arg::new("plugins")
+                .long("plugins")
+                .value_name("PLUGIN_IDS")
+                .help("Comma-separated plugin ids to run (default: all registered plugins)"),
+        )
+        .arg(
+            Arg::new("microbatch-rows")
+                .long("microbatch-rows")
+                .value_name("COUNT")
+                .help("Maximum row patches per emitted microbatch")
+                .value_parser(value_parser!(usize))
+                .default_value("64"),
+        )
+        .arg(
+            Arg::new("json")
+                .long("json")
+                .help("Render output as JSON")
+                .action(clap::ArgAction::SetTrue),
+        )
+        .arg(
+            Arg::new("header")
+                .long("header")
+                .help("Render a header row for text output")
+                .action(clap::ArgAction::SetTrue),
+        )
+        .arg(
+            Arg::new("separator")
+                .long("separator")
+                .value_name("STRING")
+                .help("Replace spaces in rendered text output")
+                .default_value(" "),
+        )
+        .arg(
+            Arg::new("directories")
+                .value_name("DIRECTORIES")
+                .help("Directories to inspect")
+                .num_args(1..),
+        )
+}
+
+fn resolve_paths(matches: &ArgMatches) -> PluginResult<Vec<PathBuf>> {
+    if matches.get_flag("all") {
+        let current_dir = Path::new(".");
+        return Ok(get_subdirectories(current_dir)
+            .into_iter()
+            .map(|name| current_dir.join(name))
+            .collect());
     }
+
+    let directories: Vec<PathBuf> = matches
+        .get_many::<String>("directories")
+        .map(|values| values.map(PathBuf::from).collect())
+        .unwrap_or_default();
+
+    if directories.is_empty() {
+        return Err("Usage: is-tree <directory> [directories...] | --all".to_string());
+    }
+
+    Ok(directories)
+}
+
+fn resolve_requested_mask(
+    explicit_format: Option<&str>,
+    columns: &ColumnCatalog,
+    registry: &plugin::PluginRegistry,
+) -> PluginResult<Vec<bool>> {
+    if let Some(format) = explicit_format {
+        if format == "all" {
+            return Ok(vec![true; columns.len()]);
+        }
+
+        let keys = parse_columns_from_format(format);
+        return registry.resolve_requested_column_mask(&keys);
+    }
+
+    let mut mask = vec![false; columns.len()];
+    for column in &columns.columns {
+        if column.default_in_base_format {
+            mask[column.ix] = true;
+        }
+    }
+
+    Ok(mask)
+}
+
+fn resolve_format_template(
+    explicit_format: Option<&str>,
+    columns: &ColumnCatalog,
+    requested_mask: &[bool],
+) -> PluginResult<String> {
+    if let Some(format) = explicit_format {
+        if format == "all" {
+            return Ok(all_columns_template(columns));
+        }
+
+        return Ok(format.to_string());
+    }
+
+    let keys: Vec<String> = columns
+        .columns
+        .iter()
+        .filter(|column| requested_mask.get(column.ix).copied().unwrap_or(false))
+        .map(|column| column.key.to_string())
+        .collect();
+
+    if keys.is_empty() {
+        return Err(
+            "No columns selected. Use --format, --jj, --jj-ahead, or plugin-specific toggles."
+                .to_string(),
+        );
+    }
+
+    Ok(keys
+        .into_iter()
+        .map(|key| format!("{{{key}}}"))
+        .collect::<Vec<_>>()
+        .join(" "))
+}
+
+fn all_columns_template(columns: &ColumnCatalog) -> String {
+    columns
+        .columns
+        .iter()
+        .map(|column| format!("{{{}}}", column.key))
+        .collect::<Vec<_>>()
+        .join(" ")
 }
 
 fn parse_columns_from_format(format: &str) -> Vec<String> {
@@ -260,242 +222,126 @@ fn parse_columns_from_format(format: &str) -> Vec<String> {
     let mut chars = format.chars().peekable();
 
     while let Some(ch) = chars.next() {
-        if ch == '{' {
-            let mut col = String::new();
-            while let Some(&next) = chars.peek() {
-                if next == '}' {
-                    chars.next();
-                    break;
-                }
-                col.push(chars.next().unwrap());
+        if ch != '{' {
+            continue;
+        }
+
+        let mut key = String::new();
+        while let Some(&next) = chars.peek() {
+            if next == '}' {
+                chars.next();
+                break;
             }
-            let trimmed = col.trim();
-            if !trimmed.is_empty() {
-                columns.push(trimmed.to_string());
-            }
+            key.push(chars.next().unwrap_or_default());
+        }
+
+        let trimmed = key.trim();
+        if !trimmed.is_empty() {
+            columns.push(trimmed.to_string());
         }
     }
 
     columns
 }
 
-fn filter_json_result(result: &Result, columns: &[String]) -> JsonResult {
-    JsonResult {
-        status: if columns.contains(&"status".to_string()) {
-            Some(result.status.clone())
-        } else {
-            None
-        },
-        directory: if columns.contains(&"directory".to_string()) {
-            Some(result.directory.clone())
-        } else {
-            None
-        },
-        commit_date: if columns.contains(&"commit-date".to_string()) {
-            result.commit_date.clone()
-        } else {
-            None
-        },
-        change_date: if columns.contains(&"change-date".to_string()) {
-            result.change_date.clone()
-        } else {
-            None
-        },
-        workparent: if columns.contains(&"workparent".to_string()) {
-            result.workparent.clone()
-        } else {
-            None
-        },
-        variant: if columns.contains(&"variant".to_string()) {
-            result.variant.clone()
-        } else {
-            None
-        },
-        ahead: if columns.contains(&"ahead".to_string()) {
-            result.ahead
-        } else {
-            None
-        },
-        beads: if columns.contains(&"beads".to_string()) {
-            result.beads.clone()
-        } else {
-            None
-        },
+fn parse_csv(value: Option<&String>) -> Vec<String> {
+    match value {
+        Some(v) => v
+            .split(',')
+            .map(str::trim)
+            .filter(|part| !part.is_empty())
+            .map(ToOwned::to_owned)
+            .collect(),
+        None => Vec::new(),
     }
 }
 
-fn format_header(format_str: &str, separator: &str) -> String {
-    let mut output = format_str.to_string();
-    output = output.replace("{status}", "STATUS");
-    output = output.replace("{directory}", "DIRECTORY");
-    output = output.replace("{commit-date}", "COMMIT-DATE");
-    output = output.replace("{change-date}", "CHANGE-DATE");
-    output = output.replace("{workparent}", "WORKPARENT");
-    output = output.replace("{variant}", "VARIANT");
-    output = output.replace("{ahead}", "AHEAD");
-    output = output.replace("{beads}", "BEADS");
-    if separator != " " {
-        output = output.replace(" ", separator);
+fn format_header(template: &str, separator: &str, columns: &ColumnCatalog) -> String {
+    let mut output = template.to_string();
+    for column in &columns.columns {
+        let placeholder = format!("{{{}}}", column.key);
+        output = output.replace(&placeholder, column.title);
     }
+
+    if separator != " " {
+        output = output.replace(' ', separator);
+    }
+
     output
 }
 
-fn format_result(result: &Result, format_str: &str, separator: &str) -> String {
-    let mut output = format_str.to_string();
-    output = output.replace("{status}", &result.status);
-    output = output.replace("{directory}", &result.directory);
-    output = output.replace("{commit-date}", result.commit_date.as_deref().unwrap_or(""));
-    output = output.replace("{change-date}", result.change_date.as_deref().unwrap_or(""));
-    output = output.replace("{workparent}", result.workparent.as_deref().unwrap_or(""));
-    output = output.replace("{variant}", result.variant.as_deref().unwrap_or(""));
-    output = output.replace(
-        "{ahead}",
-        &result.ahead.map(|x| x.to_string()).unwrap_or_default(),
-    );
-    output = output.replace("{beads}", result.beads.as_deref().unwrap_or(""));
-    if separator != " " {
-        output = output.replace(" ", separator);
+fn format_row(row: &OutputRow, template: &str, separator: &str, columns: &ColumnCatalog) -> String {
+    let mut output = template.to_string();
+    for column in &columns.columns {
+        let placeholder = format!("{{{}}}", column.key);
+        let value = row
+            .cells
+            .get(column.ix)
+            .map(cell_to_text)
+            .unwrap_or_default();
+        output = output.replace(&placeholder, &value);
     }
+
+    if separator != " " {
+        output = output.replace(' ', separator);
+    }
+
     output
 }
 
-#[derive(Debug, Clone)]
-struct Filter {
-    value: String,
-    negate: bool,
+fn cell_to_text(cell: &CellValue) -> String {
+    match cell {
+        CellValue::Text(value) => value.clone(),
+        CellValue::Number(value) => value.to_string(),
+        CellValue::Empty => String::new(),
+    }
 }
 
-#[derive(Debug, Clone)]
-struct SortSpec {
-    column: String,
-    descending: bool,
-}
+fn render_json(rows: &[OutputRow], template: &str, columns: &ColumnCatalog) -> PluginResult<()> {
+    let keys = unique_preserving_order(parse_columns_from_format(template));
+    let mut items = Vec::with_capacity(rows.len());
 
-fn parse_sort_specs(sort_str: Option<&str>) -> Vec<SortSpec> {
-    let mut specs = Vec::new();
+    for row in rows {
+        let mut obj = serde_json::Map::new();
 
-    if let Some(s) = sort_str {
-        for part in s.split(',') {
-            let part = part.trim();
-            if part.is_empty() {
+        for key in &keys {
+            let Some(ix) = columns.column_ix(key) else {
                 continue;
-            }
-
-            let descending = part.ends_with('-');
-            let ascending = part.ends_with('+');
-
-            let column = if descending || ascending {
-                part[..part.len() - 1].to_string()
-            } else {
-                part.to_string()
+            };
+            let Some(cell) = row.cells.get(ix) else {
+                continue;
             };
 
-            specs.push(SortSpec { column, descending });
-        }
-    }
-
-    specs
-}
-
-fn sort_results(results: &mut [Result], sort_specs: &[SortSpec]) {
-    if sort_specs.is_empty() {
-        return;
-    }
-
-    results.sort_by(|a, b| {
-        for spec in sort_specs {
-            let ordering = match spec.column.as_str() {
-                "status" => a.status.cmp(&b.status),
-                "directory" => a.directory.cmp(&b.directory),
-                "commit-date" => compare_option_dates(&a.commit_date, &b.commit_date),
-                "change-date" => compare_option_dates(&a.change_date, &b.change_date),
-                "workparent" => compare_options(&a.workparent, &b.workparent),
-                "variant" => compare_options(&a.variant, &b.variant),
-                "ahead" => compare_options(&a.ahead, &b.ahead),
-                "beads" => compare_options(&a.beads, &b.beads),
-                _ => std::cmp::Ordering::Equal,
-            };
-
-            if ordering != std::cmp::Ordering::Equal {
-                return if spec.descending {
-                    ordering.reverse()
-                } else {
-                    ordering
-                };
+            if let Some(value) = cell_to_json(cell) {
+                obj.insert(key.clone(), value);
             }
         }
-        std::cmp::Ordering::Equal
-    });
+
+        items.push(Value::Object(obj));
+    }
+
+    let output = serde_json::to_string_pretty(&items).map_err(|err| err.to_string())?;
+    println!("{output}");
+    Ok(())
 }
 
-fn compare_option_dates(a: &Option<String>, b: &Option<String>) -> std::cmp::Ordering {
-    match (a, b) {
-        (Some(da), Some(db)) => da.cmp(db),
-        (Some(_), None) => std::cmp::Ordering::Less,
-        (None, Some(_)) => std::cmp::Ordering::Greater,
-        (None, None) => std::cmp::Ordering::Equal,
+fn cell_to_json(cell: &CellValue) -> Option<Value> {
+    match cell {
+        CellValue::Text(value) => Some(Value::String(value.clone())),
+        CellValue::Number(value) => Some(Value::Number((*value).into())),
+        CellValue::Empty => None,
     }
 }
 
-fn compare_options<T: Ord>(a: &Option<T>, b: &Option<T>) -> std::cmp::Ordering {
-    match (a, b) {
-        (Some(da), Some(db)) => da.cmp(db),
-        (Some(_), None) => std::cmp::Ordering::Less,
-        (None, Some(_)) => std::cmp::Ordering::Greater,
-        (None, None) => std::cmp::Ordering::Equal,
-    }
-}
-
-fn parse_filters(filter_str: Option<&str>) -> Vec<Filter> {
-    let mut filters = Vec::new();
-
-    if let Some(s) = filter_str {
-        for part in s.split(',') {
-            let negate = part.ends_with('-');
-            let value = if negate {
-                part.trim_end_matches('-').to_string()
-            } else {
-                part.to_string()
-            };
-            filters.push(Filter { value, negate });
+fn unique_preserving_order(values: Vec<String>) -> Vec<String> {
+    let mut seen = HashSet::new();
+    let mut out = Vec::new();
+    for value in values {
+        if seen.insert(value.clone()) {
+            out.push(value);
         }
     }
-
-    filters
-}
-
-fn matches_filters(filters: &[Filter], info: &detect::RepoInfo, status: &str) -> bool {
-    if filters.is_empty() {
-        return true;
-    }
-
-    let has_positive_filters = filters.iter().any(|f| !f.negate);
-    let mut included = false;
-    let mut excluded = false;
-
-    for filter in filters {
-        let matches = match filter.value.as_str() {
-            "git" => status == "git",
-            "jj" => status == "jj",
-            "worktree" => info.is_worktree,
-            "worktree-git" => status == "worktree-git",
-            "worktree-jj" => status == "worktree-jj",
-            _ => false,
-        };
-
-        if !filter.negate && matches {
-            included = true;
-        }
-        if filter.negate && matches {
-            excluded = true;
-        }
-    }
-
-    if has_positive_filters {
-        included && !excluded
-    } else {
-        !excluded
-    }
+    out
 }
 
 fn get_subdirectories(dir: &Path) -> Vec<String> {
@@ -517,14 +363,4 @@ fn get_subdirectories(dir: &Path) -> Vec<String> {
 
     dirs.sort();
     dirs
-}
-
-fn get_status_string(info: &detect::RepoInfo) -> &'static str {
-    match (&info.repo_type, info.is_worktree) {
-        (RepoType::Git, true) => "worktree-git",
-        (RepoType::Git, false) => "git",
-        (RepoType::Jujutsu, true) => "worktree-jj",
-        (RepoType::Jujutsu, false) => "jj",
-        (RepoType::None, _) => "none",
-    }
 }

@@ -256,6 +256,13 @@ impl ArgStore {
     fn value(&self, arg_id: ArgId) -> Option<&ArgValue> {
         self.values.get(arg_id)
     }
+
+    fn bool(&self, arg_id: ArgId) -> Option<bool> {
+        match self.values.get(arg_id) {
+            Some(ArgValue::Bool(value)) => Some(*value),
+            _ => None,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -500,6 +507,68 @@ impl PluginRegistry {
             resolved.push(ix);
         }
         Ok(resolved)
+    }
+
+    pub fn augment_requested_column_mask_from_args(
+        &self,
+        matches: &ArgMatches,
+        requested_column_mask: &mut [bool],
+    ) -> PluginResult<()> {
+        let store = self.args.parse_store(matches);
+
+        for plugin_ix in 0..self.plugins.len() {
+            let mut enable_all_columns = false;
+
+            for &arg_id in self.args.plugin_args(plugin_ix) {
+                let entry = self
+                    .args
+                    .entries
+                    .get(arg_id)
+                    .ok_or_else(|| format!("unknown arg id: {arg_id}"))?;
+                let enabled = store.bool(arg_id).unwrap_or(false);
+
+                match entry.kind {
+                    ArgKind::PluginToggle { .. } => {
+                        if enabled {
+                            enable_all_columns = true;
+                        }
+                    }
+                    ArgKind::ColumnToggle { local_col_ix, .. } => {
+                        if !enabled {
+                            continue;
+                        }
+
+                        let global_ix = self
+                            .columns
+                            .plugin_columns(plugin_ix)
+                            .get(local_col_ix)
+                            .copied()
+                            .ok_or_else(|| {
+                                format!(
+                                    "plugin '{}' references invalid local column index {}",
+                                    self.plugins[plugin_ix].id(),
+                                    local_col_ix
+                                )
+                            })?;
+
+                        if global_ix < requested_column_mask.len() {
+                            requested_column_mask[global_ix] = true;
+                        }
+                    }
+                    _ => {}
+                }
+            }
+
+            if enable_all_columns {
+                for &global_ix in self.columns.plugin_columns(plugin_ix) {
+                    if global_ix < requested_column_mask.len() {
+                        requested_column_mask[global_ix] = true;
+                    }
+                }
+            }
+        }
+
+        Ok(())
     }
 
     pub async fn run_plugins_streaming(
