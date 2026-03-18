@@ -4,9 +4,10 @@ use std::pin::Pin;
 
 use clap::{Arg, ArgAction, ArgMatches, Command};
 use futures_core::Stream;
+use futures_util::stream;
 use futures_util::StreamExt;
 
-use crate::detect::{detect_repo, RepoInfo};
+use crate::detect::{detect_repo, get_ahead, RepoInfo, RepoType};
 
 pub type RowId = usize;
 pub type PluginIx = usize;
@@ -712,5 +713,77 @@ fn parse_arg_value(matches: &ArgMatches, entry: &ArgEntry) -> ArgValue {
 }
 
 pub fn default_registry() -> PluginRegistry {
-    PluginRegistry::new(Box::new(CoreRepoProbe))
+    let mut registry = PluginRegistry::new(Box::new(CoreRepoProbe));
+    registry.register(Box::new(JjPlugin));
+    registry
+}
+
+struct JjPlugin;
+
+const JJ_COLUMNS: &[ColumnDecl] = &[ColumnDecl {
+    key: "ahead",
+    title: "AHEAD",
+    description: "Local commits ahead of tracked remote bookmarks",
+    sortable: true,
+    default_in_base_format: false,
+}];
+
+const JJ_ARGS: &[ArgKind] = &[
+    ArgKind::PluginToggle {
+        help: "Enable Jujutsu plugin columns",
+    },
+    ArgKind::ColumnToggle {
+        local_col_ix: 0,
+        help: "Enable Jujutsu ahead column",
+    },
+];
+
+impl DetectorPlugin for JjPlugin {
+    fn id(&self) -> &'static str {
+        "jj"
+    }
+
+    fn description(&self) -> &'static str {
+        "Jujutsu repository metrics"
+    }
+
+    fn column_decls(&self) -> &'static [ColumnDecl] {
+        JJ_COLUMNS
+    }
+
+    fn arg_kinds(&self) -> &'static [ArgKind] {
+        JJ_ARGS
+    }
+
+    fn configure(&self, _args: PluginArgs<'_>) -> PluginConfig {
+        PluginConfig::enabled()
+    }
+
+    fn applies_to(&self, repo: &RepoInfo) -> bool {
+        repo.repo_type == RepoType::Jujutsu
+    }
+
+    fn collect_stream<'a>(&'a self, req: CollectRequest<'a>) -> BatchStream<'a> {
+        let requested_columns = req.requested_columns.to_vec();
+        Box::pin(stream::once(async move {
+            if requested_columns.is_empty() {
+                return Ok(Vec::new());
+            }
+
+            let ahead_column = requested_columns[0];
+            let mut patches = Vec::with_capacity(req.items.len());
+
+            for item in req.items {
+                let value = get_ahead(&item.path, &item.repo)
+                    .map(CellValue::Number)
+                    .unwrap_or(CellValue::Empty);
+                patches.push(RowPatch {
+                    row_id: item.row_id,
+                    updates: vec![(ahead_column, value)],
+                });
+            }
+
+            Ok(patches)
+        }))
+    }
 }
