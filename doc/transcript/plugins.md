@@ -2,7 +2,7 @@
 
 **Session ID:** ses_30c07dae9ffegGDdNyRStHNV8u
 **Created:** 3/16/2026, 12:07:31 AM
-**Updated:** 3/18/2026, 5:41:48 AM
+**Updated:** 3/18/2026, 5:46:11 AM
 
 ---
 
@@ -6240,11 +6240,771 @@ Parent commit (@-): zktwuryp edf105b9 Add is-tree-ticket-count to track beads st
 
 ---
 
-## Assistant (Build · gpt-5.3-codex)
+## Assistant (Build · gpt-5.3-codex · 9.1s)
+
+_Thinking:_
+
+**Committing plugin implementation**
+
+**Tool: bash**
+
+**Input:**
+```json
+{
+  "command": "jj commit -m \"Add Jujutsu plugin on ArgKind plugin framework\"",
+  "workdir": "/home/rektide/src/is-tree",
+  "description": "Commit current JJ plugin conversion changes"
+}
+```
+
+**Output:**
+```
+Working copy  (@) now at: posyuzkt 4f27b384 (empty) (no description set)
+Parent commit (@-)      : pkxwvnuv 6b8e563b Add Jujutsu plugin on ArgKind plugin framework
+
+```
+
+---
+
+## Assistant (Build · gpt-5.3-codex · 4.5s)
+
+_Thinking:_
+
+**Scoping subprocess refactor**
+
+**Tool: read**
+
+**Input:**
+```json
+{
+  "filePath": "/home/rektide/src/is-tree/src/plugin.rs",
+  "offset": 680,
+  "limit": 220
+}
+```
+
+**Output:**
+```
+<path>/home/rektide/src/is-tree/src/plugin.rs</path>
+<type>file</type>
+<content>680:             .action(ArgAction::Append),
+681:         ArgKind::Count { help, .. } => Arg::new(id)
+682:             .long(long)
+683:             .help(help)
+684:             .action(ArgAction::Count),
+685:     }
+686: }
+687: 
+688: fn parse_arg_value(matches: &ArgMatches, entry: &ArgEntry) -> ArgValue {
+689:     match entry.kind {
+690:         ArgKind::PluginToggle { .. } | ArgKind::ColumnToggle { .. } => {
+691:             ArgValue::Bool(matches.get_flag(&entry.clap_id))
+692:         }
+693:         ArgKind::Flag { default, .. } => {
+694:             let value = matches.get_flag(&entry.clap_id);
+695:             ArgValue::Bool(value || default)
+696:         }
+697:         ArgKind::String { default, .. } => {
+698:             let value = matches
+699:                 .get_one::<String>(&entry.clap_id)
+700:                 .cloned()
+701:                 .or_else(|| default.map(str::to_string));
+702:             ArgValue::String(value)
+703:         }
+704:         ArgKind::StringList { .. } => {
+705:             let values = matches
+706:                 .get_many::<String>(&entry.clap_id)
+707:                 .map(|it| it.cloned().collect())
+708:                 .unwrap_or_else(Vec::new);
+709:             ArgValue::Strings(values)
+710:         }
+711:         ArgKind::Count { .. } => ArgValue::Count(matches.get_count(&entry.clap_id)),
+712:     }
+713: }
+714: 
+715: pub fn default_registry() -> PluginRegistry {
+716:     let mut registry = PluginRegistry::new(Box::new(CoreRepoProbe));
+717:     registry.register(Box::new(JjPlugin));
+718:     registry
+719: }
+720: 
+721: struct JjPlugin;
+722: 
+723: const JJ_COLUMNS: &[ColumnDecl] = &[ColumnDecl {
+724:     key: "ahead",
+725:     title: "AHEAD",
+726:     description: "Local commits ahead of tracked remote bookmarks",
+727:     sortable: true,
+728:     default_in_base_format: false,
+729: }];
+730: 
+731: const JJ_ARGS: &[ArgKind] = &[
+732:     ArgKind::PluginToggle {
+733:         help: "Enable Jujutsu plugin columns",
+734:     },
+735:     ArgKind::ColumnToggle {
+736:         local_col_ix: 0,
+737:         help: "Enable Jujutsu ahead column",
+738:     },
+739: ];
+740: 
+741: impl DetectorPlugin for JjPlugin {
+742:     fn id(&self) -> &'static str {
+743:         "jj"
+744:     }
+745: 
+746:     fn description(&self) -> &'static str {
+747:         "Jujutsu repository metrics"
+748:     }
+749: 
+750:     fn column_decls(&self) -> &'static [ColumnDecl] {
+751:         JJ_COLUMNS
+752:     }
+753: 
+754:     fn arg_kinds(&self) -> &'static [ArgKind] {
+755:         JJ_ARGS
+756:     }
+757: 
+758:     fn configure(&self, _args: PluginArgs<'_>) -> PluginConfig {
+759:         PluginConfig::enabled()
+760:     }
+761: 
+762:     fn applies_to(&self, repo: &RepoInfo) -> bool {
+763:         repo.repo_type == RepoType::Jujutsu
+764:     }
+765: 
+766:     fn collect_stream<'a>(&'a self, req: CollectRequest<'a>) -> BatchStream<'a> {
+767:         let requested_columns = req.requested_columns.to_vec();
+768:         Box::pin(stream::once(async move {
+769:             if requested_columns.is_empty() {
+770:                 return Ok(Vec::new());
+771:             }
+772: 
+773:             let ahead_column = requested_columns[0];
+774:             let mut patches = Vec::with_capacity(req.items.len());
+775: 
+776:             for item in req.items {
+777:                 let value = get_ahead(&item.path, &item.repo)
+778:                     .map(CellValue::Number)
+779:                     .unwrap_or(CellValue::Empty);
+780:                 patches.push(RowPatch {
+781:                     row_id: item.row_id,
+782:                     updates: vec![(ahead_column, value)],
+783:                 });
+784:             }
+785: 
+786:             Ok(patches)
+787:         }))
+788:     }
+789: }
+
+(End of file - total 789 lines)
+</content>
+```
+
+---
+
+## Assistant (Build · gpt-5.3-codex · 35.0s)
+
+_Thinking:_
+
+**Designing modular sub-processor architecture**
+
+**Tool: apply_patch**
+
+**Input:**
+```json
+{
+  "patchText": "*** Begin Patch\n*** Update File: /home/rektide/src/is-tree/src/plugin.rs\n@@\n pub struct CollectRequest<'a> {\n     pub items: &'a [RepoWorkItem],\n     pub cfg: &'a PluginConfig,\n-    pub requested_columns: &'a [ColumnIx],\n+    pub requested_columns: &'a [(usize, ColumnIx)],\n     pub microbatch_rows: usize,\n }\n@@\n-    fn requested_columns_for_plugin(\n-        &self,\n-        plugin_ix: PluginIx,\n-        requested_column_mask: &[bool],\n-    ) -> Vec<ColumnIx> {\n+    fn requested_columns_for_plugin(\n+        &self,\n+        plugin_ix: PluginIx,\n+        requested_column_mask: &[bool],\n+    ) -> Vec<(usize, ColumnIx)> {\n         self.columns\n             .plugin_columns(plugin_ix)\n             .iter()\n+            .enumerate()\n             .copied()\n-            .filter(|&ix| requested_column_mask.get(ix).copied().unwrap_or(false))\n+            .filter(|&(_, ix)| requested_column_mask.get(ix).copied().unwrap_or(false))\n             .collect()\n     }\n*** End Patch"
+}
+```
+
+**Output:**
+```
+Success. Updated the following files:
+M src/plugin.rs
+```
+
+---
+
+## Assistant (Build · gpt-5.3-codex · 30.4s)
+
+_Thinking:_
+
+**Adding subprocessor patch near constants**
+
+**Tool: apply_patch**
+
+**Input:**
+```json
+{
+  "patchText": "*** Begin Patch\n*** Update File: /home/rektide/src/is-tree/src/plugin.rs\n@@\n struct JjPlugin;\n+\n+const JJ_COL_AHEAD: usize = 0;\n@@\n const JJ_ARGS: &[ArgKind] = &[\n     ArgKind::PluginToggle {\n         help: \"Enable Jujutsu plugin columns\",\n     },\n     ArgKind::ColumnToggle {\n-        local_col_ix: 0,\n+        local_col_ix: JJ_COL_AHEAD,\n         help: \"Enable Jujutsu ahead column\",\n     },\n ];\n+\n+#[derive(Clone, Copy)]\n+struct JjSubProcessor {\n+    local_col_ix: usize,\n+    collect_cell: fn(&RepoWorkItem) -> CellValue,\n+}\n+\n+const JJ_SUBPROCESSORS: &[JjSubProcessor] = &[JjSubProcessor {\n+    local_col_ix: JJ_COL_AHEAD,\n+    collect_cell: jj_collect_ahead,\n+}];\n+\n+fn jj_collect_ahead(item: &RepoWorkItem) -> CellValue {\n+    get_ahead(&item.path, &item.repo)\n+        .map(CellValue::Number)\n+        .unwrap_or(CellValue::Empty)\n+}\n+\n+fn collect_jj_subprocessor_batches(\n+    req: &CollectRequest<'_>,\n+    global_col_ix: ColumnIx,\n+    processor: JjSubProcessor,\n+) -> MicroBatch {\n+    req.items\n+        .iter()\n+        .map(|item| RowPatch {\n+            row_id: item.row_id,\n+            updates: vec![(global_col_ix, (processor.collect_cell)(item))],\n+        })\n+        .collect()\n+}\n+\n+fn microbatch_rows(patches: MicroBatch, size: usize) -> Vec<MicroBatch> {\n+    let batch_size = size.max(1);\n+    let mut out = Vec::new();\n+    let mut current = Vec::with_capacity(batch_size);\n+\n+    for patch in patches {\n+        current.push(patch);\n+        if current.len() >= batch_size {\n+            out.push(std::mem::take(&mut current));\n+        }\n+    }\n+\n+    if !current.is_empty() {\n+        out.push(current);\n+    }\n+\n+    out\n+}\n@@\n     fn collect_stream<'a>(&'a self, req: CollectRequest<'a>) -> BatchStream<'a> {\n-        let requested_columns = req.requested_columns.to_vec();\n-        Box::pin(stream::once(async move {\n-            if requested_columns.is_empty() {\n-                return Ok(Vec::new());\n+        let mut selected_global_by_local = vec![None; JJ_COLUMNS.len()];\n+        for (local_col_ix, global_col_ix) in req.requested_columns {\n+            if *local_col_ix < selected_global_by_local.len() {\n+                selected_global_by_local[*local_col_ix] = Some(*global_col_ix);\n             }\n+        }\n+\n+        let mut microbatches = Vec::new();\n+        for processor in JJ_SUBPROCESSORS {\n+            let Some(global_col_ix) = selected_global_by_local[processor.local_col_ix] else {\n+                continue;\n+            };\n \n-            let ahead_column = requested_columns[0];\n-            let mut patches = Vec::with_capacity(req.items.len());\n+            let patches = collect_jj_subprocessor_batches(&req, global_col_ix, *processor);\n+            let batches = microbatch_rows(patches, req.microbatch_rows);\n+            for batch in batches {\n+                microbatches.push(Ok(batch));\n+            }\n+        }\n \n-            for item in req.items {\n-                let value = get_ahead(&item.path, &item.repo)\n-                    .map(CellValue::Number)\n-                    .unwrap_or(CellValue::Empty);\n-                patches.push(RowPatch {\n-                    row_id: item.row_id,\n-                    updates: vec![(ahead_column, value)],\n-                });\n-            }\n-\n-            Ok(patches)\n-        }))\n+        Box::pin(stream::iter(microbatches))\n     }\n }\n*** End Patch"
+}
+```
+
+**Output:**
+```
+Success. Updated the following files:
+M src/plugin.rs
+```
+
+---
+
+## Assistant (Build · gpt-5.3-codex · 6.8s)
+
+_Thinking:_
+
+**Verifying unused imports and warnings**
+
+**Tool: bash**
+
+**Input:**
+```json
+{
+  "command": "cargo check",
+  "workdir": "/home/rektide/src/is-tree",
+  "description": "Compile after JJ sub-processor refactor"
+}
+```
+
+**Output:**
+```
+    Checking is-tree v0.1.0 (/home/rektide/src/is-tree)
+error[E0271]: expected `Enumerate<Iter<'_, usize>>` to be an iterator that yields `&_`, but it yields `(usize, &usize)`
+    --> src/plugin.rs:568:14
+     |
+ 568 |             .copied()
+     |              ^^^^^^ expected `&_`, found `(usize, &usize)`
+     |
+     = note: expected reference `&_`
+                    found tuple `(usize, &usize)`
+note: required by a bound in `copied`
+    --> /home/rektide/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/traits/iterator.rs:3510:32
+     |
+3507 |     fn copied<'a, T>(self) -> Copied<Self>
+     |        ------ required by a bound in this associated function
+...
+3510 |         Self: Sized + Iterator<Item = &'a T>,
+     |                                ^^^^^^^^^^^^ required by this bound in `Iterator::copied`
+
+error[E0599]: the method `filter` exists for struct `Copied<std::iter::Enumerate<std::slice::Iter<'_, usize>>>`, but its trait bounds were not satisfied
+   --> src/plugin.rs:569:14
+    |
+564 | /         self.columns
+565 | |             .plugin_columns(plugin_ix)
+566 | |             .iter()
+567 | |             .enumerate()
+568 | |             .copied()
+569 | |             .filter(|&(_, ix)| requested_column_mask.get(ix).copied().unwrap_or(false))
+    | |             -^^^^^^ method cannot be called due to unsatisfied trait bounds
+    | |_____________|
+    |
+    |
+   ::: /home/rektide/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/adapters/copied.rs:19:1
+    |
+ 19 |   pub struct Copied<I> {
+    |   -------------------- doesn't satisfy `_: Iterator`, `_: StreamExt` or `_: Stream`
+    |
+   ::: /home/rektide/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/adapters/enumerate.rs:18:1
+    |
+ 18 |   pub struct Enumerate<I> {
+    |   ----------------------- doesn't satisfy `<_ as Iterator>::Item = &_`
+    |
+    = note: the following trait bounds were not satisfied:
+            `Copied<std::iter::Enumerate<std::slice::Iter<'_, usize>>>: Stream`
+            which is required by `Copied<std::iter::Enumerate<std::slice::Iter<'_, usize>>>: StreamExt`
+            `<std::iter::Enumerate<std::slice::Iter<'_, usize>> as Iterator>::Item = &_`
+            which is required by `Copied<std::iter::Enumerate<std::slice::Iter<'_, usize>>>: Iterator`
+            `&Copied<std::iter::Enumerate<std::slice::Iter<'_, usize>>>: Stream`
+            which is required by `&Copied<std::iter::Enumerate<std::slice::Iter<'_, usize>>>: StreamExt`
+            `&mut Copied<std::iter::Enumerate<std::slice::Iter<'_, usize>>>: Stream`
+            which is required by `&mut Copied<std::iter::Enumerate<std::slice::Iter<'_, usize>>>: StreamExt`
+            `Copied<std::iter::Enumerate<std::slice::Iter<'_, usize>>>: Iterator`
+            which is required by `&mut Copied<std::iter::Enumerate<std::slice::Iter<'_, usize>>>: Iterator`
+
+Some errors have detailed explanations: E0271, E0599.
+For more information about an error, try `rustc --explain E0271`.
+error: could not compile `is-tree` (bin "is-tree") due to 2 previous errors
+
+```
+
+---
+
+## Assistant (Build · gpt-5.3-codex · 5.6s)
+
+_Thinking:_
+
+**Fixing iterator mapping**
+
+**Tool: apply_patch**
+
+**Input:**
+```json
+{
+  "patchText": "*** Begin Patch\n*** Update File: /home/rektide/src/is-tree/src/plugin.rs\n@@\n         self.columns\n             .plugin_columns(plugin_ix)\n             .iter()\n             .enumerate()\n-            .copied()\n-            .filter(|&(_, ix)| requested_column_mask.get(ix).copied().unwrap_or(false))\n+            .map(|(local, &ix)| (local, ix))\n+            .filter(|&(_, ix)| requested_column_mask.get(ix).copied().unwrap_or(false))\n             .collect()\n     }\n*** End Patch"
+}
+```
+
+**Output:**
+```
+Success. Updated the following files:
+M src/plugin.rs
+```
+
+---
+
+## Assistant (Build · gpt-5.3-codex · 3.2s)
+
+_Thinking:_
+
+**Running cargo check**
+
+**Tool: bash**
+
+**Input:**
+```json
+{
+  "command": "cargo check",
+  "workdir": "/home/rektide/src/is-tree",
+  "description": "Re-run compile after enumerate mapping fix"
+}
+```
+
+**Output:**
+```
+    Checking is-tree v0.1.0 (/home/rektide/src/is-tree)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.18s
+
+```
+
+---
+
+## Assistant (Build · gpt-5.3-codex · 3.8s)
+
+_Thinking:_
+
+**Preparing commit after status check**
+
+**Tool: bash**
+
+**Input:**
+```json
+{
+  "command": "jj status",
+  "workdir": "/home/rektide/src/is-tree",
+  "description": "Inspect changes before second commit"
+}
+```
+
+**Output:**
+```
+Working copy changes:
+M src/plugin.rs
+Working copy  (@) : posyuzkt 0534f2d6 (no description set)
+Parent commit (@-): pkxwvnuv 6b8e563b Add Jujutsu plugin on ArgKind plugin framework
+
+```
+
+---
+
+## Assistant (Build · gpt-5.3-codex · 4.2s)
 
 _Thinking:_
 
 
+
+**Tool: bash**
+
+**Input:**
+```json
+{
+  "command": "jj commit -m \"Refactor Jujutsu plugin into sub-processor microbatches\"",
+  "workdir": "/home/rektide/src/is-tree",
+  "description": "Commit JJ plugin sub-processor architecture changes"
+}
+```
+
+**Output:**
+```
+Working copy  (@) now at: lnsyytwn cd9ccfe4 (empty) (no description set)
+Parent commit (@-)      : posyuzkt d3c08255 Refactor Jujutsu plugin into sub-processor microbatches
+
+```
+
+---
+
+## Assistant (Build · gpt-5.3-codex · 7.5s)
+
+_Thinking:_
+
+**Summarizing completed commits**
+
+Done — completed both commits in order.
+
+1) First commit (jj plugin conversion)
+- `6b8e563b` — `Add Jujutsu plugin on ArgKind plugin framework`
+- Includes `src/plugin.rs` with `JjPlugin` registered and `ahead` column implemented on the `ArgKind` system.
+
+2) Second commit (sub-processor conversion)
+- `d3c08255` — `Refactor Jujutsu plugin into sub-processor microbatches`
+- Refactors `JjPlugin` in `src/plugin.rs` to use internal sub-processors:
+  - `JjSubProcessor` abstraction
+  - `JJ_SUBPROCESSORS` list
+  - local->global requested column mapping via `(local_col_ix, ColumnIx)` pairs
+  - microbatch splitting helper (`microbatch_rows`)
+  - stream emission with `stream::iter(...)`
+
+Validation:
+- `cargo check` passes after the refactor.
+
+---
+
+## User
+
+what are next steps, to integrating this code?
+
+---
+
+## Assistant (Build · gpt-5.3-codex · 7.9s)
+
+_Thinking:_
+
+**Analyzing current plugin integration**
+
+**Tool: read**
+
+**Input:**
+```json
+{
+  "filePath": "/home/rektide/src/is-tree/src/main.rs",
+  "offset": 1,
+  "limit": 260
+}
+```
+
+**Output:**
+```
+<path>/home/rektide/src/is-tree/src/main.rs</path>
+<type>file</type>
+<content>1: use std::fs;
+2: use std::path::{Path, PathBuf};
+3: 
+4: use clap::Parser;
+5: use serde::Serialize;
+6: 
+7: mod detect;
+8: #[allow(dead_code)]
+9: mod plugin;
+10: 
+11: use detect::{
+12:     detect_repo, get_ahead, get_beads_prefix, get_change_date, get_commit_date, get_variant,
+13:     get_workparent, RepoType,
+14: };
+15: 
+16: #[derive(Parser)]
+17: #[command(
+18:     name = "is-tree",
+19:     after_long_help = "
+20: DETAILED OPTIONS:
+21: 
+22:   --filter <TYPES>
+23:       Filter results by repository types. Multiple types can be comma-separated.
+24:       Use - suffix for NOT (exclude matching types).
+25:       
+26:       Types: git, jj, worktree, worktree-git, worktree-jj
+27:       
+28:       Examples:
+29:         --filter git              Show only Git repositories
+30:         --filter git,jj           Show Git and Jujutsu repos
+31:         --filter worktree-         Show non-worktree repos
+32:         --filter git,jj,worktree- Show Git and JJ but exclude worktrees
+33: 
+34:   --sort <COLUMNS>
+35:       Sort results by column(s). Multiple columns can be comma-separated.
+36:       Use + suffix for ascending (default), - for descending.
+37:       
+38:       Columns: status, directory, commit-date, change-date, workparent, variant, ahead, beads
+39:       
+40:       Examples:
+41:         --sort status+              Sort by status ascending
+42:         --sort change-date-          Sort by most recent change first
+43:         --sort status-,directory+    Sort by status descending, then directory
+44: 
+45:   --format <STRING>
+46:       Custom output format using {column} placeholders.
+47:       Use --format all as a shortcut for all columns.
+48:       
+49:       Columns: status, directory, commit-date, change-date, workparent, variant, ahead, beads
+50:       
+51:       Examples:
+52:         --format '{status} {directory}'
+53:         --format '{directory} - {status} ({workparent})'
+54:         --format '{directory} ({variant})'
+55:         --format all
+56: 
+57:   --commit-date, --change-date, --dates
+58:       Add date columns to default output.
+59:       --commit-date adds last commit date.
+60:       --change-date adds last file change date.
+61:       --dates adds both.
+62: "
+63: )]
+64: struct Cli {
+65:     #[arg(short, long)]
+66:     all: bool,
+67: 
+68:     #[arg(long)]
+69:     filter: Option<String>,
+70: 
+71:     #[arg(long)]
+72:     sort: Option<String>,
+73: 
+74:     #[arg(long)]
+75:     format: Option<String>,
+76: 
+77:     #[arg(long)]
+78:     date: Option<String>,
+79: 
+80:     #[arg(long)]
+81:     json: bool,
+82: 
+83:     #[arg(long)]
+84:     header: bool,
+85: 
+86:     #[arg(long, default_value = " ")]
+87:     separator: String,
+88: 
+89:     #[arg(long)]
+90:     jj: bool,
+91: 
+92:     #[arg(long)]
+93:     git: bool,
+94: 
+95:     #[arg(long)]
+96:     beads: bool,
+97: 
+98:     #[arg(long)]
+99:     commit_date: bool,
+100: 
+101:     #[arg(long)]
+102:     change_date: bool,
+103: 
+104:     #[arg(long)]
+105:     dates: bool,
+106: 
+107:     #[arg(name = "DIRECTORIES")]
+108:     directories: Vec<PathBuf>,
+109: }
+110: 
+111: #[derive(Debug, Clone, Serialize)]
+112: struct Result {
+113:     status: String,
+114:     directory: String,
+115:     commit_date: Option<String>,
+116:     change_date: Option<String>,
+117:     workparent: Option<String>,
+118:     variant: Option<String>,
+119:     ahead: Option<isize>,
+120:     beads: Option<String>,
+121: }
+122: 
+123: #[derive(Debug, Clone, Serialize)]
+124: struct JsonResult {
+125:     #[serde(skip_serializing_if = "Option::is_none")]
+126:     status: Option<String>,
+127:     #[serde(skip_serializing_if = "Option::is_none")]
+128:     directory: Option<String>,
+129:     #[serde(skip_serializing_if = "Option::is_none")]
+130:     commit_date: Option<String>,
+131:     #[serde(skip_serializing_if = "Option::is_none")]
+132:     change_date: Option<String>,
+133:     #[serde(skip_serializing_if = "Option::is_none")]
+134:     workparent: Option<String>,
+135:     #[serde(skip_serializing_if = "Option::is_none")]
+136:     variant: Option<String>,
+137:     #[serde(skip_serializing_if = "Option::is_none")]
+138:     ahead: Option<isize>,
+139:     #[serde(skip_serializing_if = "Option::is_none")]
+140:     beads: Option<String>,
+141: }
+142: 
+143: fn main() {
+144:     let cli = Cli::parse();
+145:     run_list(cli);
+146: }
+147: 
+148: fn run_list(args: Cli) {
+149:     let filters = parse_filters(args.filter.as_deref());
+150:     let sort_specs = parse_sort_specs(args.sort.as_deref());
+151:     let format_str = build_format_string(&args);
+152: 
+153:     let paths = if args.all {
+154:         let current_dir = Path::new(".");
+155:         get_subdirectories(current_dir)
+156:             .into_iter()
+157:             .map(|p| current_dir.join(p))
+158:             .collect()
+159:     } else if args.directories.is_empty() {
+160:         eprintln!("Usage: is-tree <directory> [directories...] | --all");
+161:         std::process::exit(1);
+162:     } else {
+163:         args.directories
+164:     };
+165: 
+166:     let mut results: Vec<Result> = Vec::new();
+167: 
+168:     for path in paths {
+169:         let info = detect_repo(&path);
+170:         let status = get_status_string(&info);
+171:         let commit_date = get_commit_date(&path, &info);
+172:         let change_date = get_change_date(&path);
+173:         let workparent = get_workparent(&path, &info);
+174:         let variant = get_variant(&path, &info);
+175:         let ahead = get_ahead(&path, &info);
+176:         let beads = get_beads_prefix(&path);
+177: 
+178:         if matches_filters(&filters, &info, status) {
+179:             results.push(Result {
+180:                 status: status.to_string(),
+181:                 directory: path.display().to_string(),
+182:                 commit_date,
+183:                 change_date,
+184:                 workparent,
+185:                 variant,
+186:                 ahead,
+187:                 beads,
+188:             });
+189:         }
+190:     }
+191: 
+192:     sort_results(&mut results, &sort_specs);
+193: 
+194:     let format_str = format_str.as_deref().unwrap_or("{status} {directory}");
+195: 
+196:     if args.json {
+197:         let columns = parse_columns_from_format(format_str);
+198:         let json_results: Vec<JsonResult> = results
+199:             .iter()
+200:             .map(|r| filter_json_result(r, &columns))
+201:             .collect();
+202:         let json_output = serde_json::to_string_pretty(&json_results).unwrap();
+203:         println!("{}", json_output);
+204:     } else {
+205:         let sep = &args.separator;
+206:         if args.header {
+207:             println!("{}", format_header(format_str, sep));
+208:         }
+209:         for result in results {
+210:             let formatted = format_result(&result, format_str, sep);
+211:             println!("{}", formatted);
+212:         }
+213:     }
+214: }
+215: 
+216: fn build_format_string(args: &Cli) -> Option<String> {
+217:     if let Some(fmt) = &args.format {
+218:         return Some(resolve_format_shortcuts(fmt).to_string());
+219:     }
+220: 
+221:     let mut columns = vec!["{status}", "{directory}"];
+222: 
+223:     if args.dates {
+224:         columns.push("{commit-date}");
+225:         columns.push("{change-date}");
+226:     } else {
+227:         if args.commit_date {
+228:             columns.push("{commit-date}");
+229:         }
+230:         if args.change_date {
+231:             columns.push("{change-date}");
+232:         }
+233:     }
+234: 
+235:     if args.jj {
+236:         columns.push("{ahead}");
+237:     }
+238: 
+239:     if args.git {
+240:         // Git-specific columns would go here when implemented
+241:     }
+242: 
+243:     if args.beads {
+244:         columns.push("{beads}");
+245:     }
+246: 
+247:     Some(columns.join(" "))
+248: }
+249: 
+250: fn resolve_format_shortcuts(format: &str) -> &str {
+251:     if format == "all" {
+252:         "{status} {directory} {commit-date} {change-date} {workparent} {variant} {ahead} {beads}"
+253:     } else {
+254:         format
+255:     }
+256: }
+257: 
+258: fn parse_columns_from_format(format: &str) -> Vec<String> {
+259:     let mut columns = Vec::new();
+260:     let mut chars = format.chars().peekable();
+
+(Showing lines 1-260 of 530. Use offset=261 to continue.)
+</content>
+```
+
+---
+
+## Assistant (Build · gpt-5.3-codex · 33.0s)
+
+_Thinking:_
+
+**Proposing phased CLI-plugin integration**
+
+Great momentum — you’re very close. Right now the new system exists, but it’s not yet wired into execution (`src/main.rs` is still the old fixed pipeline, and `src/plugin.rs` is mostly isolated).
+
+**Next steps to integrate cleanly**
+
+- Replace static clap derive flow in `src/main.rs` with registry-composed parsing from `src/plugin.rs`
+  - move from `Cli::parse()` to building base `Command`, then `registry.build_command(...)`
+  - parse once into `ArgMatches`, then call `registry.configure_all(...)`
+
+- Add parity plugins before switching runtime
+  - keep `jj` as-is
+  - add `core-status` plugin (`status`, `directory`) so default output still works
+  - add wrappers for current columns (`commit-date`, `change-date`, `workparent`, `variant`, `beads`) using existing detect helpers
+
+- Define argument semantics centrally (important)
+  - right now `ArgKind::PluginToggle` / `ColumnToggle` are parsed, but no global enable logic is enforced
+  - add rules like:
+    1) `--format` requested columns always included
+    2) `--plugin` enables all plugin columns
+    3) `--plugin-col` enables that one column
+    4) old compatibility flags map to new toggles
+
+- Bridge new rows into current output path first
+  - keep existing formatter/sorter/json in `src/main.rs` for now
+  - add adapter from `OutputRow` (`src/plugin.rs`) -> legacy `Result` struct
+  - this lets you ship integration without rewriting rendering yet
+
+- Flip execution to plugin path
+  - build `RepoWorkItem`s once
+  - resolve requested column mask
+  - run `run_plugins_streaming(...)`
+  - then existing filter/sort/render
+
+- Convert `main` to async runtime
+  - `run_plugins_streaming` is async, so switch `main` to `#[tokio::main] async fn main()`
+  - later convert subprocesses to `tokio::process::Command` for real async gain
+
+- Lock in compatibility tests before deleting old pipeline
+  - snapshot outputs for representative invocations (`default`, `--format all`, `--json`, sort/filter combos)
+  - assert old and new outputs match for current columns
+
+- After parity, do cleanup pass
+  - remove old direct calls in `src/main.rs` (`get_ahead`, `get_beads_prefix`, etc.)
+  - remove `#[allow(dead_code)] mod plugin;` and make plugin path primary
+  - update help/docs to plugin-owned flags
+
+If you want, I can take the next concrete step now: wire `src/main.rs` to registry execution with an adapter so behavior stays identical while using the new plugin engine.
 
 ---
 
