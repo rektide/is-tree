@@ -334,7 +334,7 @@ impl Default for PluginConfig {
 pub struct CollectRequest<'a> {
     pub items: &'a [RepoWorkItem],
     pub cfg: &'a PluginConfig,
-    pub requested_columns: &'a [ColumnIx],
+    pub requested_columns: &'a [(usize, ColumnIx)],
     pub microbatch_rows: usize,
 }
 
@@ -560,12 +560,13 @@ impl PluginRegistry {
         &self,
         plugin_ix: PluginIx,
         requested_column_mask: &[bool],
-    ) -> Vec<ColumnIx> {
+    ) -> Vec<(usize, ColumnIx)> {
         self.columns
             .plugin_columns(plugin_ix)
             .iter()
-            .copied()
-            .filter(|&ix| requested_column_mask.get(ix).copied().unwrap_or(false))
+            .enumerate()
+            .map(|(local, &ix)| (local, ix))
+            .filter(|&(_, ix)| requested_column_mask.get(ix).copied().unwrap_or(false))
             .collect()
     }
 
@@ -720,6 +721,8 @@ pub fn default_registry() -> PluginRegistry {
 
 struct JjPlugin;
 
+const JJ_COL_AHEAD: usize = 0;
+
 const JJ_COLUMNS: &[ColumnDecl] = &[ColumnDecl {
     key: "ahead",
     title: "AHEAD",
@@ -733,10 +736,60 @@ const JJ_ARGS: &[ArgKind] = &[
         help: "Enable Jujutsu plugin columns",
     },
     ArgKind::ColumnToggle {
-        local_col_ix: 0,
+        local_col_ix: JJ_COL_AHEAD,
         help: "Enable Jujutsu ahead column",
     },
 ];
+
+#[derive(Clone, Copy)]
+struct JjSubProcessor {
+    local_col_ix: usize,
+    collect_cell: fn(&RepoWorkItem) -> CellValue,
+}
+
+const JJ_SUBPROCESSORS: &[JjSubProcessor] = &[JjSubProcessor {
+    local_col_ix: JJ_COL_AHEAD,
+    collect_cell: jj_collect_ahead,
+}];
+
+fn jj_collect_ahead(item: &RepoWorkItem) -> CellValue {
+    get_ahead(&item.path, &item.repo)
+        .map(CellValue::Number)
+        .unwrap_or(CellValue::Empty)
+}
+
+fn collect_jj_subprocessor_batches(
+    req: &CollectRequest<'_>,
+    global_col_ix: ColumnIx,
+    processor: JjSubProcessor,
+) -> MicroBatch {
+    req.items
+        .iter()
+        .map(|item| RowPatch {
+            row_id: item.row_id,
+            updates: vec![(global_col_ix, (processor.collect_cell)(item))],
+        })
+        .collect()
+}
+
+fn microbatch_rows(patches: MicroBatch, size: usize) -> Vec<MicroBatch> {
+    let batch_size = size.max(1);
+    let mut out = Vec::new();
+    let mut current = Vec::with_capacity(batch_size);
+
+    for patch in patches {
+        current.push(patch);
+        if current.len() >= batch_size {
+            out.push(std::mem::take(&mut current));
+        }
+    }
+
+    if !current.is_empty() {
+        out.push(current);
+    }
+
+    out
+}
 
 impl DetectorPlugin for JjPlugin {
     fn id(&self) -> &'static str {
@@ -764,26 +817,26 @@ impl DetectorPlugin for JjPlugin {
     }
 
     fn collect_stream<'a>(&'a self, req: CollectRequest<'a>) -> BatchStream<'a> {
-        let requested_columns = req.requested_columns.to_vec();
-        Box::pin(stream::once(async move {
-            if requested_columns.is_empty() {
-                return Ok(Vec::new());
+        let mut selected_global_by_local = vec![None; JJ_COLUMNS.len()];
+        for (local_col_ix, global_col_ix) in req.requested_columns {
+            if *local_col_ix < selected_global_by_local.len() {
+                selected_global_by_local[*local_col_ix] = Some(*global_col_ix);
             }
+        }
 
-            let ahead_column = requested_columns[0];
-            let mut patches = Vec::with_capacity(req.items.len());
+        let mut microbatches = Vec::new();
+        for processor in JJ_SUBPROCESSORS {
+            let Some(global_col_ix) = selected_global_by_local[processor.local_col_ix] else {
+                continue;
+            };
 
-            for item in req.items {
-                let value = get_ahead(&item.path, &item.repo)
-                    .map(CellValue::Number)
-                    .unwrap_or(CellValue::Empty);
-                patches.push(RowPatch {
-                    row_id: item.row_id,
-                    updates: vec![(ahead_column, value)],
-                });
+            let patches = collect_jj_subprocessor_batches(&req, global_col_ix, *processor);
+            let batches = microbatch_rows(patches, req.microbatch_rows);
+            for batch in batches {
+                microbatches.push(Ok(batch));
             }
+        }
 
-            Ok(patches)
-        }))
+        Box::pin(stream::iter(microbatches))
     }
 }
