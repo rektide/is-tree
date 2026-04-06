@@ -11,32 +11,36 @@ is-tree ~/src/compfuzor
 # Test all directories in current path with --all/-a
 is-tree --all
 
-# Filter for specific types (comma-separated, - for NOT)
-is-tree --all --filter git
-is-tree --all --filter git,jj
-is-tree --all --filter worktree-git,worktree-jj
-is-tree --all --filter worktree-
-is-tree --all --filter git-,jj
-
 # Test specific directories by positional arguments
 is-tree ~/src/compfuzor ~/src/niri-mcp
 
-# Sort by any column (use + for ascending, - for descending)
-is-tree --all --sort change-date-
-is-tree --all --sort commit-date+
-is-tree --all --sort workparent,directory+
-
-# Multiple sorts (comma-separated)
-is-tree --all --sort status-,change-date+
-
 # Custom output format with interpolated columns
-is-tree --all --format "{status} {directory} {commit-date} {change-date} {workparent}"
 is-tree --all --format "{status} {directory} {ahead}"
 is-tree --all --format all
+
+# Enable jj plugin columns
+is-tree --all --jj
 
 # Output as JSON (respects --format for column selection)
 is-tree --all --json
 is-tree --all --format "{status} {directory} {ahead}" --json
+
+# Header row with custom separator
+is-tree --all --header --separator " | "
+```
+
+### Planned usage (not yet implemented)
+
+```bash
+# Filter for specific types (comma-separated, - for NOT)
+is-tree --all --filter git
+is-tree --all --filter git,jj
+is-tree --all --filter worktree-
+is-tree --all --filter git-,jj
+
+# Sort by any column (use + for ascending, - for descending)
+is-tree --all --sort change-date-
+is-tree --all --sort workparent,directory+
 
 # Custom date format
 is-tree --all --date "%Y-%m-%d %H:%M:%S"
@@ -44,27 +48,52 @@ is-tree --all --date "%Y-%m-%d %H:%M:%S"
 
 ## Options
 
-- `--all`, `-a` - Test all directories in current path
-- `--filter <type>` - Filter by type(s). Multiple types comma-separated. Suffix `-` for NOT. Types: `git`, `jj`, `worktree`, `worktree-git`, `worktree-jj`
-- `--sort <column>` - Sort by column(s). Multiple columns comma-separated. Suffix `+` for ascending, `-` for descending
-- `--format <string>` - Custom output format with interpolated columns
-  - Shortcut: `--format all` includes all available columns
-- `--date <format>` - Date format string (default: ISO 8601)
-- `--json` - Output results in JSON format
-- Positional arguments - Test specific directories
+### Implemented
+
+| Flag | Description |
+|------|-------------|
+| `--all`, `-a` | Scan all non-hidden subdirectories in current directory |
+| `--format <template>` | Output format with `{column}` placeholders; `all` for every column |
+| `--json` | Output as JSON array (respects `--format` for column selection) |
+| `--header` | Print a header row above text output |
+| `--separator <string>` | Replace spaces between columns in text output (default: single space) |
+| `--plugins <ids>` | Comma-separated plugin ids to run (default: all) |
+| `--microbatch-rows <n>` | Max row patches per streaming microbatch (default: 64) |
+| `--jj` | Enable jj plugin columns (equivalent to requesting all jj columns) |
+| `--jj-ahead` | Enable the `ahead` column |
+| `<directories>` | Positional paths to inspect |
+
+### Not yet implemented
+
+| Flag | Description | Ticket |
+|------|-------------|--------|
+| `--filter <type>` | Filter by repo type: `git`, `jj`, `worktree`, `worktree-git`, `worktree-jj`. Suffix `-` for NOT | [is-tree-sort-filter-date] |
+| `--sort <column>` | Sort by column(s). Suffix `+` ascending, `-` descending | [is-tree-sort-filter-date] |
+| `--date <format>` | strftime-style date format (default: ISO 8601) | [is-tree-sort-filter-date] |
 
 ## Output
 
 Default format: `<status> <directory>`
 
 ### Columns
-Available columns for custom format:
-- `status` - Repository type (git, jj, worktree-git, worktree-jj, none)
-- `directory` - Full directory path
-- `workparent` - Directory name of the workparent (without path), for worktrees only
-- `commit-date` - Most recent commit date
-- `change-date` - Most recent file change date
-- `ahead` - Number of local JJ commits ahead of tracked remote bookmarks
+
+Available columns for `--format`:
+
+**Implemented:**
+
+| Column | Description | Source |
+|--------|-------------|--------|
+| `status` | Repository type (git, jj, worktree-git, worktree-jj, none) | core |
+| `directory` | Full directory path | core |
+| `ahead` | Local JJ commits ahead of tracked remote bookmarks | `--jj` / `--jj-ahead` |
+
+**Not yet implemented:**
+
+| Column | Description | Ticket |
+|--------|-------------|--------|
+| `workparent` | Directory name of the workparent (worktrees only) | [is-tree-sort-filter-date] |
+| `commit-date` | Most recent commit date | [is-tree-sort-filter-date] |
+| `change-date` | Most recent file change date | [is-tree-sort-filter-date] |
 
 ### Status values
 - `git` - Git repository (not Jujutsu, not a worktree)
@@ -128,7 +157,8 @@ The detection strategy uses a hierarchical approach to classify directories base
 
 ### Interaction & workflows
 
+- **[is-tree-sort-filter-date]** `--sort`, `--filter`, `--date` flags for controlling output ordering, type filtering, and date formatting.
+- **[is-tree-scan-priority]** Stream recently-changed projects first during scans.
 - **[is-tree-interactive-picker]** Built-in TUI picker with fuzzy search and multi-select for choosing trees.
 - **[is-tree-fuzzel-pipeline]** Documented example pipeline: `is-tree --all --format "{directory}" | fuzzel --dmenu --multi`.
-- **[is-tree-scan-priority]** Stream recently-changed projects first during scans.
 - **[is-tree-semantic-search]** Semantic search across trees via opencode run / ACP.
