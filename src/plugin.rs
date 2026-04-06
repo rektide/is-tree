@@ -7,7 +7,9 @@ use futures_core::Stream;
 use futures_util::stream;
 use futures_util::StreamExt;
 
-use crate::detect::{detect_repo, get_ahead, RepoInfo, RepoType};
+use crate::detect::{
+    detect_repo, get_ahead, get_beads_last_changed, RepoInfo, RepoType,
+};
 
 pub type RowId = usize;
 pub type PluginIx = usize;
@@ -785,6 +787,7 @@ fn parse_arg_value(matches: &ArgMatches, entry: &ArgEntry) -> ArgValue {
 pub fn default_registry() -> PluginRegistry {
     let mut registry = PluginRegistry::new(Box::new(CoreRepoProbe));
     registry.register(Box::new(JjPlugin));
+    registry.register(Box::new(BeadsPlugin));
     registry
 }
 
@@ -900,6 +903,110 @@ impl DetectorPlugin for JjPlugin {
             };
 
             let patches = collect_jj_subprocessor_batches(&req, global_col_ix, *processor);
+            let batches = microbatch_rows(patches, req.microbatch_rows);
+            for batch in batches {
+                microbatches.push(Ok(batch));
+            }
+        }
+
+        Box::pin(stream::iter(microbatches))
+    }
+}
+
+struct BeadsPlugin;
+
+const BEADS_COL_LAST_CHANGED: usize = 0;
+
+const BEADS_COLUMNS: &[ColumnDecl] = &[ColumnDecl {
+    key: "beads-last-changed",
+    title: "BEADS_LAST_CHANGED",
+    description: "Timestamp of the most recently updated beads issue",
+    sortable: true,
+    default_in_base_format: false,
+}];
+
+const BEADS_ARGS: &[ArgKind] = &[
+    ArgKind::PluginToggle {
+        help: "Enable Beads plugin columns",
+    },
+    ArgKind::ColumnToggle {
+        local_col_ix: BEADS_COL_LAST_CHANGED,
+        help: "Enable beads last-changed column",
+    },
+];
+
+#[derive(Clone, Copy)]
+struct BeadsSubProcessor {
+    local_col_ix: usize,
+    collect_cell: fn(&RepoWorkItem) -> CellValue,
+}
+
+const BEADS_SUBPROCESSORS: &[BeadsSubProcessor] = &[BeadsSubProcessor {
+    local_col_ix: BEADS_COL_LAST_CHANGED,
+    collect_cell: beads_collect_last_changed,
+}];
+
+fn beads_collect_last_changed(item: &RepoWorkItem) -> CellValue {
+    get_beads_last_changed(&item.path)
+        .map(CellValue::Text)
+        .unwrap_or(CellValue::Empty)
+}
+
+fn collect_beads_subprocessor_batches(
+    req: &CollectRequest<'_>,
+    global_col_ix: ColumnIx,
+    processor: BeadsSubProcessor,
+) -> MicroBatch {
+    req.items
+        .iter()
+        .map(|item| RowPatch {
+            row_id: item.row_id,
+            updates: vec![(global_col_ix, (processor.collect_cell)(item))],
+        })
+        .collect()
+}
+
+impl DetectorPlugin for BeadsPlugin {
+    fn id(&self) -> &'static str {
+        "beads"
+    }
+
+    fn description(&self) -> &'static str {
+        "Beads issue tracker metrics"
+    }
+
+    fn column_decls(&self) -> &'static [ColumnDecl] {
+        BEADS_COLUMNS
+    }
+
+    fn arg_kinds(&self) -> &'static [ArgKind] {
+        BEADS_ARGS
+    }
+
+    fn configure(&self, _args: PluginArgs<'_>) -> PluginConfig {
+        PluginConfig::enabled()
+    }
+
+    fn applies_to(&self, _repo: &RepoInfo) -> bool {
+        true
+    }
+
+    fn collect_stream<'a>(&'a self, req: CollectRequest<'a>) -> BatchStream<'a> {
+        let mut selected_global_by_local = vec![None; BEADS_COLUMNS.len()];
+        for (local_col_ix, global_col_ix) in req.requested_columns {
+            if *local_col_ix < selected_global_by_local.len() {
+                selected_global_by_local[*local_col_ix] = Some(*global_col_ix);
+            }
+        }
+
+        let mut microbatches = Vec::new();
+        for processor in BEADS_SUBPROCESSORS {
+            let Some(global_col_ix) = selected_global_by_local[processor.local_col_ix] else {
+                continue;
+            };
+
+            let patches =
+                collect_beads_subprocessor_batches(&req, global_col_ix, *processor);
             let batches = microbatch_rows(patches, req.microbatch_rows);
             for batch in batches {
                 microbatches.push(Ok(batch));

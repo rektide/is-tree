@@ -61,6 +61,10 @@ async fn run() -> PluginResult<()> {
         )
         .await?;
 
+    if let Some(sort_key) = matches.get_one::<String>("sort").map(String::as_str) {
+        sort_rows(&mut rows, sort_key, registry.columns())?;
+    }
+
     if matches.get_flag("json") {
         render_json(&rows, &format_template, registry.columns())?;
     } else {
@@ -129,6 +133,12 @@ fn base_command() -> Command {
                 .value_name("STRING")
                 .help("Replace spaces in rendered text output")
                 .default_value(" "),
+        )
+        .arg(
+            Arg::new("sort")
+                .long("sort")
+                .value_name("COLUMN_KEY")
+                .help("Sort output rows by the given column key (descending)"),
         )
         .arg(
             Arg::new("directories")
@@ -340,6 +350,41 @@ fn cell_to_text(cell: &CellValue) -> String {
         CellValue::Text(value) => value.clone(),
         CellValue::Number(value) => value.to_string(),
         CellValue::Empty => String::new(),
+    }
+}
+
+fn sort_rows(
+    rows: &mut [OutputRow],
+    sort_key: &str,
+    columns: &ColumnCatalog,
+) -> PluginResult<()> {
+    let col_ix = columns
+        .column_ix(sort_key)
+        .ok_or_else(|| format!("unknown column key for --sort: {sort_key}"))?;
+
+    let spec = &columns.columns[col_ix];
+    if !spec.sortable {
+        return Err(format!("column '{}' is not sortable", sort_key));
+    }
+
+    rows.sort_by(|a, b| {
+        let a_val = a.cells.get(col_ix).unwrap_or(&CellValue::Empty);
+        let b_val = b.cells.get(col_ix).unwrap_or(&CellValue::Empty);
+        compare_cells(b_val, a_val)
+    });
+
+    Ok(())
+}
+
+fn compare_cells(a: &CellValue, b: &CellValue) -> std::cmp::Ordering {
+    match (a, b) {
+        (CellValue::Empty, CellValue::Empty) => std::cmp::Ordering::Equal,
+        (CellValue::Empty, _) => std::cmp::Ordering::Less,
+        (_, CellValue::Empty) => std::cmp::Ordering::Greater,
+        (CellValue::Number(an), CellValue::Number(bn)) => an.cmp(bn),
+        (CellValue::Text(at), CellValue::Text(bt)) => at.cmp(bt),
+        (CellValue::Number(_), CellValue::Text(_)) => std::cmp::Ordering::Less,
+        (CellValue::Text(_), CellValue::Number(_)) => std::cmp::Ordering::Greater,
     }
 }
 
