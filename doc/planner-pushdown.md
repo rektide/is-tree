@@ -5,6 +5,8 @@ This document proposes a lightweight query planner for `is-tree` so we can push 
 Related docs and code:
 
 - [`/doc/pick-iter.md`](/doc/pick-iter.md)
+- [`/doc/plan/seedling-phase-1-query-planner.md`](/doc/plan/seedling-phase-1-query-planner.md)
+- [`/doc/plan/flowline-phase-2-staged-runtime.md`](/doc/plan/flowline-phase-2-staged-runtime.md)
 - [`/README.md`](/README.md)
 - [`/src/main.rs`](/src/main.rs)
 - [`/src/plugin.rs`](/src/plugin.rs)
@@ -219,7 +221,7 @@ Key benefits:
 
 ## Implementation plan
 
-### Phase 1: planner metadata and rule engine
+### Phase 1: Seedling (planner metadata and rule engine)
 
 - Add `LogicalQuery`, `PhysicalPlan`, and column metadata table.
 - Build planner from existing CLI args (`format`, `sort`, `filter`, `json`, `all`).
@@ -230,7 +232,7 @@ Acceptance:
 - Planner returns deterministic stage assignment for projection/filter/sort keys.
 - `--all --format directory` is represented as enumerate-only plan.
 
-### Phase 2: staged execution runtime
+### Phase 2: Flowline (staged execution runtime)
 
 - Introduce execution stages in `run()` path:
   - enumerate
