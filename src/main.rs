@@ -25,6 +25,15 @@ async fn run() -> PluginResult<()> {
 
     let paths = resolve_paths(&matches)?;
     let explicit_format = matches.get_one::<String>("format").map(String::as_str);
+
+    if should_short_circuit_directory_only(explicit_format) {
+        return render_directory_only(
+            &paths,
+            matches.get_flag("json"),
+            matches.get_flag("header"),
+        );
+    }
+
     let mut requested_mask =
         resolve_requested_mask(explicit_format, registry.columns(), &registry)?;
     registry.augment_requested_column_mask_from_args(&matches, &mut requested_mask)?;
@@ -256,6 +265,43 @@ fn parse_csv(value: Option<&String>) -> Vec<String> {
     }
 }
 
+fn should_short_circuit_directory_only(explicit_format: Option<&str>) -> bool {
+    matches!(
+        explicit_format.map(str::trim),
+        Some("directory") | Some("{directory}")
+    )
+}
+
+fn render_directory_only(paths: &[PathBuf], as_json: bool, header: bool) -> PluginResult<()> {
+    if as_json {
+        let items: Vec<Value> = paths
+            .iter()
+            .map(|path| {
+                let mut obj = serde_json::Map::new();
+                obj.insert(
+                    "directory".to_string(),
+                    Value::String(path.display().to_string()),
+                );
+                Value::Object(obj)
+            })
+            .collect();
+
+        let output = serde_json::to_string_pretty(&items).map_err(|err| err.to_string())?;
+        println!("{output}");
+        return Ok(());
+    }
+
+    if header {
+        println!("directory");
+    }
+
+    for path in paths {
+        println!("{}", path.display());
+    }
+
+    Ok(())
+}
+
 fn format_header(template: &str, separator: &str, columns: &ColumnCatalog) -> String {
     let mut output = template.to_string();
     for column in &columns.columns {
@@ -363,4 +409,26 @@ fn get_subdirectories(dir: &Path) -> Vec<String> {
 
     dirs.sort();
     dirs
+}
+
+#[cfg(test)]
+mod tests {
+    use super::should_short_circuit_directory_only;
+
+    #[test]
+    fn short_circuit_matches_directory_shorthand() {
+        assert!(should_short_circuit_directory_only(Some("directory")));
+    }
+
+    #[test]
+    fn short_circuit_matches_directory_placeholder() {
+        assert!(should_short_circuit_directory_only(Some("{directory}")));
+    }
+
+    #[test]
+    fn short_circuit_ignores_non_directory_formats() {
+        assert!(!should_short_circuit_directory_only(Some("all")));
+        assert!(!should_short_circuit_directory_only(Some("{status} {directory}")));
+        assert!(!should_short_circuit_directory_only(None));
+    }
 }
