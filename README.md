@@ -110,3 +110,25 @@ The detection strategy uses a hierarchical approach to classify directories base
 - `~/src/compfuzor-x` → `worktree-git` (has `.git` file with `gitdir:` pointer)
 - `~/src/niri-mcp` → `jj` (has `.jj/` directory or `.jj` file in main workspace)
 - `~/src/niri-mcp-x` → `worktree-jj` (has `.jj` file pointing to main workspace)
+
+## Roadmap
+
+### `reforrest` — replicate local state to remotes
+
+- **[is-tree-reforrest-cli]** Replicate local git and jj states up to tracked remotes. Discovers trees, pushes ahead branches/bookmarks, reports results.
+- **[is-tree-reforrest-starter]** Scaffold the reforrest crate with CLI subcommands (`push`, `status`, `ensure-remote`), depending on is-tree as a library.
+- **[is-tree-reforrest-tangled]** Auto-create missing remotes via the `tn` (tangled.org) CLI before pushing.
+- **[is-tree-reforrest-watchman]** Daemonized proactive sync — watches for new commits and pushes automatically.
+
+### Staleness & reporting
+
+- **[is-tree-duration-column]** Add an `age`/`duration` column showing relative time since last change (e.g. `2h`, `3d`, `6w`).
+- **[is-tree-per-file-stats]** Recurse into trees and report per-file stats: modification time, age, size. Filter by age thresholds.
+- **[is-tree-staleness-views]** Cohesive staleness dashboard — at-a-glance fresh/aging/stale indicators, summary stats, drill-down into stale trees.
+
+### Interaction & workflows
+
+- **[is-tree-interactive-picker]** Built-in TUI picker with fuzzy search and multi-select for choosing trees.
+- **[is-tree-fuzzel-pipeline]** Documented example pipeline: `is-tree --all --format "{directory}" | fuzzel --dmenu --multi`.
+- **[is-tree-scan-priority]** Stream recently-changed projects first during scans.
+- **[is-tree-semantic-search]** Semantic search across trees via opencode run / ACP.
