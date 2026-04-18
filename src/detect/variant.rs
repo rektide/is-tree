@@ -17,32 +17,85 @@ pub fn get_variant(path: &Path, info: &RepoInfo) -> Option<String> {
 }
 
 fn compute_variant(workspace_name: &str, project_name: &str) -> String {
-    if let Some(suffix) = workspace_name.strip_prefix(project_name) {
-        strip_separator(suffix).to_string()
-    } else if let Some(suffix) = extract_embedded_suffix(workspace_name, project_name) {
-        strip_separator(&suffix).to_string()
-    } else {
-        String::new()
+    if let Some(suffix) = try_strip_project(workspace_name, project_name) {
+        return strip_separator(&suffix).to_string();
     }
+    String::new()
+}
+
+fn normalize(s: &str) -> String {
+    s.chars()
+        .filter(|c| c.is_ascii_alphanumeric())
+        .flat_map(|c| c.to_lowercase())
+        .collect()
+}
+
+fn try_strip_project(workspace_name: &str, project_name: &str) -> Option<String> {
+    let norm_workspace = normalize(workspace_name);
+    let norm_project = normalize(project_name);
+
+    let prefix_len = norm_project.len();
+    if norm_workspace.len() <= prefix_len {
+        return None;
+    }
+    if !norm_workspace.starts_with(&norm_project) {
+        return None;
+    }
+
+    let norm_suffix = &norm_workspace[prefix_len..];
+    let suffix_len = norm_suffix.len();
+
+    Some(workspace_name[workspace_name.len() - suffix_len..].to_string())
 }
 
 fn strip_separator(s: &str) -> &str {
     s.strip_prefix('-')
         .or_else(|| s.strip_prefix('_'))
+        .or_else(|| s.strip_prefix('.'))
         .unwrap_or(s)
 }
 
-fn extract_embedded_suffix(workspace_name: &str, project_name: &str) -> Option<String> {
-    let dash_pattern = format!("-{}-", project_name);
-    let underscore_pattern = format!("_{}_", project_name);
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-    if let Some(pos) = workspace_name.find(&dash_pattern) {
-        let suffix_start = pos + dash_pattern.len();
-        Some(workspace_name[suffix_start..].to_string())
-    } else if let Some(pos) = workspace_name.find(&underscore_pattern) {
-        let suffix_start = pos + underscore_pattern.len();
-        Some(workspace_name[suffix_start..].to_string())
-    } else {
-        None
+    #[test]
+    fn simple_dash_suffix() {
+        assert_eq!(compute_variant("myproject-foo", "myproject"), "foo");
+    }
+
+    #[test]
+    fn dot_in_project_name() {
+        assert_eq!(compute_variant("usegpu-viteplus", "use.gpu"), "viteplus");
+    }
+
+    #[test]
+    fn dot_in_project_name_dom() {
+        assert_eq!(compute_variant("usegpu-dom", "use.gpu"), "dom");
+    }
+
+    #[test]
+    fn dot_in_project_name_rolldown() {
+        assert_eq!(compute_variant("usegpu-rolldown", "use.gpu"), "rolldown");
+    }
+
+    #[test]
+    fn no_match() {
+        assert_eq!(compute_variant("unrelated-name", "other-project"), "");
+    }
+
+    #[test]
+    fn exact_match_no_variant() {
+        assert_eq!(compute_variant("myproject", "myproject"), "");
+    }
+
+    #[test]
+    fn underscore_suffix() {
+        assert_eq!(compute_variant("myproject_foo", "myproject"), "foo");
+    }
+
+    #[test]
+    fn dot_suffix() {
+        assert_eq!(compute_variant("myproject.foo", "myproject"), "foo");
     }
 }
